@@ -84,6 +84,7 @@ private:
 	int click_num = 0;
 	bool is_long_press = false;
 
+	bool isBrake = true;		// 默认刹车
 	bool gear_P = true;			// 默认为驻车
 	bool key_up = false;
 	bool key_down = false;

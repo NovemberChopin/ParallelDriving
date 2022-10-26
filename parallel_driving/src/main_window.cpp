@@ -20,7 +20,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	p_velo_timer = new QTimer(this);
 	p_steer_timer = new QTimer(this);
 
-	u_int8_t gear = 3;
+	u_int8_t gear = 1;				// 初始化时候为驻车
 	u_int8_t brake = 0;
 	float velocity = 0.0;
 	float steer = 0.0;
@@ -39,6 +39,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	// 登录页面的信号
 	QObject::connect(configP, SIGNAL(getConfigInfo(ConfigInfo*)), this, SLOT(connectByConfig(ConfigInfo*)));
 
+	// 计时器超时信号
 	QObject::connect(p_velo_timer, &QTimer::timeout, this, &MainWindow::handleVelocity);
 	QObject::connect(p_steer_timer, &QTimer::timeout, this, &MainWindow::handleSteer);
 
@@ -66,26 +67,17 @@ void MainWindow::handleVelocity() {
 		return;
 	} 
 	this->velo_cmd_num++;
-	u_int8_t gear = 3;			// 默认驻车
+	u_int8_t gear = 3;			// 默认空挡
 	float velocity = 0.0;
-	// 在此处构造消息
 	if (key_up) {				// 前进
 		gear = 4;
 		velocity = qnode.velo_fb_ + 0.01 * velo_cmd_num;
 		if (velocity >= 5.0) velocity = 5.0;
 	} 
-	if (key_down) {				// 后退（刹车）
-		if (qnode.velo_fb_ > 0) {
-			/* 刹车 */
-			gear = 2;
-			velocity = velo_cmd_num - 0.01 * 2 * velo_cmd_num;
-			if (velocity < 0)	velocity = 0;
-		} else if (qnode.velo_fb_ == 0) {
-			/* 后退 */
-			gear = 2;
-			velocity = qnode.velo_fb_ + 0.01 * velo_cmd_num;
-			if (velocity > 5.0) velocity = 5.0;
-		}
+	if (key_down) {				// 后退
+		gear = 2;
+		velocity = qnode.velo_fb_ + 0.01 * velo_cmd_num;
+		if (velocity > 5.0) velocity = 5.0;
 	}
 
 	this->ctrl_msg_.ctrl_cmd_gear = gear;
@@ -114,6 +106,19 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 	if (event->key() == Qt::Key_P) {
 		this->gear_P = !this->gear_P;
 		qDebug() << "gear_P: " << this->gear_P;
+		if (this->gear_P) {		// 如果改为驻车, 那么方向自动回正
+			this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(1);
+			this->ctrl_msg_.ctrl_cmd_velocity = 0;
+			this->ctrl_msg_.ctrl_cmd_steering = 0;
+		}
+	}
+
+	if (event->key() == Qt::Key_Space) {		// 按下空格开始刹车
+		if (event->isAutoRepeat())	return;
+
+		this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
+		this->ctrl_msg_.ctrl_cmd_Brake = u_int8_t(1);
+		qDebug() << "brake: true";
 	}
 
 	if (event->key() == Qt::Key_Up) {			// 方向键 上
@@ -157,11 +162,21 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event) {
 	Q_UNUSED(event);
+	// 结束刹车，调为空挡
+	if (event->key() == Qt::Key_Space) {	
+		if (event->isAutoRepeat())	return;
+
+		this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
+		this->ctrl_msg_.ctrl_cmd_Brake = u_int8_t(0);
+		qDebug() << "brake: false";
+	}
 
 	if (event->key() == Qt::Key_Up) {
 		if (event->isAutoRepeat()) return;
 		key_up = false;
 		qDebug() << "Key_down release" << key_up;
+		// 改为空挡
+		this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
 		if (p_velo_timer->isActive() == true) {
 			p_velo_timer->stop();
 			this->velo_cmd_num = 0;
@@ -170,6 +185,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
 		if (event->isAutoRepeat()) return;
 		key_down = false;
 		qDebug() << "Key_down release" << key_up;
+		// 改为空挡
+		this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
 		if (p_velo_timer->isActive() == true) {
 			p_velo_timer->stop();
 			this->velo_cmd_num = 0;
