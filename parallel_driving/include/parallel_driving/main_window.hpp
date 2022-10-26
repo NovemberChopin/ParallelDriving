@@ -29,6 +29,8 @@
 
 #include "qnode.hpp"
 #include "config_panel.hpp"
+#include "page_left.hpp"
+#include "page_center.hpp"
 
 
 namespace parallel_driving {
@@ -69,11 +71,16 @@ private:
 	Ui::MainWindowDesign ui;
 	QNode qnode;				// ROS节点相关
 	ConfigPanel *configP;		// ROS配置对话框
+	PageLeft *pageL;			// 左边页面
+	PageCenter *pageC;			// 中间页面
+
 	/*** main window ***/
 	QLabel *title_label;
 	QLabel *main_label;
 	QPushButton *btn_config;
 
+
+	/***** 控制车辆运动的变量 ******/
 	yhs_can_msgs::ctrl_cmd ctrl_msg_;
 
 	QTimer *p_velo_timer;		// 速度按键计时器

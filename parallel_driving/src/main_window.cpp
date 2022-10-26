@@ -16,6 +16,8 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 {
 	ui.setupUi(this); 
 	configP = new ConfigPanel();
+	pageL = new PageLeft();
+	pageC = new PageCenter();
 
 	p_velo_timer = new QTimer(this);
 	p_steer_timer = new QTimer(this);
@@ -61,7 +63,7 @@ void MainWindow::handleSteer() {
 	this->ctrl_msg_.ctrl_cmd_steering = steer;
 }
 
-// 处理
+// 处理速度
 void MainWindow::handleVelocity() {
 	if (gear_P) {	// 如果现在为驻车，直接返回默认值
 		return;
@@ -261,6 +263,8 @@ void MainWindow::showNoMasterMessage() {
 void MainWindow::openConfigPanel() {
 	ROS_INFO("Open ROS config panel");
 	configP->show();
+	pageL->show();
+	pageC->show();
 }
 
 
