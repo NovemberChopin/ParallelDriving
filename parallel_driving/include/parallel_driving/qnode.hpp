@@ -81,6 +81,7 @@ public:
 	ros::Publisher pub_ctrl_cmd;
 	ros::Publisher pub_io_cmd;
 	float velo_fb_ = 0;
+	float steer_fb_ = 0;
 };
 
 }  // namespace parallel_driving

@@ -22,6 +22,9 @@
 #include "yhs_can_msgs/io_cmd.h"
 #include "yhs_can_msgs/ctrl_cmd.h"
 
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
+
 #include "ui_main_window.h"
 
 #include "qnode.hpp"
@@ -47,11 +50,15 @@ public:
 	void keyReleaseEvent(QKeyEvent *event);		// 键盘事件
 
 
+	void sendCtrlCmd();		// 播放ctrl_cmd话题的线程
+	// void sendIOCmd();
+
 public Q_SLOTS:
 	void openConfigPanel();				// 打开ROS配置页面
 	void connectByConfig(ConfigInfo* config);	// 处理配置弹窗
 
-	void handleCtrlMsg();
+	void handleVelocity();				// 处理速度
+	void handleSteer();					// 处理转向角
 
 	void setImage_0(cv::Mat img);
 	void setImage_1(cv::Mat img);
@@ -77,6 +84,7 @@ private:
 	int click_num = 0;
 	bool is_long_press = false;
 
+	bool gear_P = true;			// 默认为驻车
 	bool key_up = false;
 	bool key_down = false;
 	bool key_left = false;

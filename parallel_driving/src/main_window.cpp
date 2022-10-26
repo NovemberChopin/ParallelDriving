@@ -18,6 +18,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	configP = new ConfigPanel();
 
 	p_velo_timer = new QTimer(this);
+	p_steer_timer = new QTimer(this);
 
 	u_int8_t gear = 3;
 	u_int8_t brake = 0;
@@ -38,47 +39,82 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	// 登录页面的信号
 	QObject::connect(configP, SIGNAL(getConfigInfo(ConfigInfo*)), this, SLOT(connectByConfig(ConfigInfo*)));
 
-	QObject::connect(p_velo_timer, &QTimer::timeout, this, &MainWindow::handleCtrlMsg);
+	QObject::connect(p_velo_timer, &QTimer::timeout, this, &MainWindow::handleVelocity);
+	QObject::connect(p_steer_timer, &QTimer::timeout, this, &MainWindow::handleSteer);
 
 	this->setCentralWidget(this->init_main_page());
 }
 
 MainWindow::~MainWindow() {}
 
+void MainWindow::handleSteer() {
+	this->steer_cmd_num++;
+	float steer = 0;
+	if (key_left) {
+		steer = qnode.steer_fb_ - 0.05 * steer_cmd_num;
+		if (steer < -25.0)	steer = -25.0;
+	} else {
+		steer = qnode.steer_fb_ + 0.05 * steer_cmd_num;
+		if (steer > 25.0)  steer = 25.0;
+	}
+	this->ctrl_msg_.ctrl_cmd_steering = steer;
+}
+
 // 处理
-void MainWindow::handleCtrlMsg() {
+void MainWindow::handleVelocity() {
+	if (gear_P) {	// 如果现在为驻车，直接返回默认值
+		return;
+	} 
 	this->velo_cmd_num++;
-	u_int8_t gear = 3;		// 默认驻车档
-	u_int8_t brake = 0;
+	u_int8_t gear = 3;			// 默认驻车
 	float velocity = 0.0;
-	float steer = 0.0;
 	// 在此处构造消息
-	if (key_up) {		// 前进
+	if (key_up) {				// 前进
 		gear = 4;
-		velocity = 0.01 * velo_cmd_num;
+		velocity = qnode.velo_fb_ + 0.01 * velo_cmd_num;
 		if (velocity >= 5.0) velocity = 5.0;
-	} else {			// 后退（刹车）
+	} 
+	if (key_down) {				// 后退（刹车）
 		if (qnode.velo_fb_ > 0) {
 			/* 刹车 */
-			velocity = velo_cmd_num - 0.01 * velo_cmd_num;
+			gear = 2;
+			velocity = velo_cmd_num - 0.01 * 2 * velo_cmd_num;
 			if (velocity < 0)	velocity = 0;
-		} else if (qnode.velo_fb_ = 0) {
+		} else if (qnode.velo_fb_ == 0) {
 			/* 后退 */
 			gear = 2;
-			velocity = 0.01 * velo_cmd_num;
+			velocity = qnode.velo_fb_ + 0.01 * velo_cmd_num;
+			if (velocity > 5.0) velocity = 5.0;
 		}
 	}
 
 	this->ctrl_msg_.ctrl_cmd_gear = gear;
 	this->ctrl_msg_.ctrl_cmd_velocity = velocity;
-	this->ctrl_msg_.ctrl_cmd_steering = steer;
-	this->ctrl_msg_.ctrl_cmd_Brake = brake;
-	this->qnode.pub_ctrl_cmd.publish(this->ctrl_msg_);
+	
+}
+
+
+void MainWindow::sendCtrlCmd() {
+    ros::Rate loop_rate(100);
+    
+    ROS_INFO("start send ctrl message");
+    while (ros::ok())
+    {
+        this->qnode.pub_ctrl_cmd.publish(this->ctrl_msg_);
+
+        ros::spinOnce();
+
+        loop_rate.sleep();
+    }
 }
 
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
 	Q_UNUSED(event);
+	if (event->key() == Qt::Key_P) {
+		this->gear_P = !this->gear_P;
+		qDebug() << "gear_P: " << this->gear_P;
+	}
 
 	if (event->key() == Qt::Key_Up) {			// 方向键 上
 		if (event->isAutoRepeat()) return;
@@ -93,7 +129,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 		
 		if (p_velo_timer->isActive() == false) {
 			key_down = true;
-			qDebug() << "Key_Up press " << key_up;
+			qDebug() << "Key_down press " << key_up;
 			p_velo_timer->start(10);
 		}
 	}
@@ -110,7 +146,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 		if (event->isAutoRepeat()) return;
 
 		if (p_steer_timer->isActive() == false) {
-			key_right = true;
+			key_right = false;
 			qDebug() << "Key_right press " << key_right;
 			p_steer_timer->start(10);
 		}
@@ -224,6 +260,9 @@ void MainWindow::connectByConfig(ConfigInfo *config) {
     } else {
         // 连接成功
         this->btn_config->setEnabled(false);
+
+		boost::thread send_ctrl_thread(boost::bind(&MainWindow::sendCtrlCmd, this));
+		// boost::thread send_io_thread(boost::bind(&MainWindow::sendIOCmd, this));
     }
 }
 

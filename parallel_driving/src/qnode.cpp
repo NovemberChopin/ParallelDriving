@@ -75,6 +75,7 @@ void QNode::sendCtrlCmd() {
 void QNode::ctrlCallback(const yhs_can_msgs::ctrl_fb& msg) {
 	// std::cout << "velocity fb is " << msg.ctrl_fb_velocity << " " << msg.ctrl_fb_steering << std::endl;
 	this->velo_fb_ = msg.ctrl_fb_velocity;
+	this->steer_fb_ = msg.ctrl_fb_steering;
 }
 
 // void QNode::run() {
