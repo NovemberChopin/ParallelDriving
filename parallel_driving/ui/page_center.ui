@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>454</width>
-    <height>466</height>
+    <width>1311</width>
+    <height>802</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,26 +25,76 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
-   <property name="leftMargin">
+  <property name="styleSheet">
+   <string notr="true">#PageCenter{background-color: rgb(7, 28, 43);}
+</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="5,35">
+   <property name="spacing">
     <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>20</number>
    </property>
    <property name="topMargin">
     <number>0</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>20</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>20</number>
    </property>
    <item>
-    <widget class="QWidget" name="widget" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout">
+    <widget class="QWidget" name="title" native="true">
+     <property name="styleSheet">
+      <string notr="true">#title{border-image: url(:/images/center_title.png)}</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="">
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="main" native="true">
+     <property name="styleSheet">
+      <string notr="true">#main{border-image: url(:/images/center/31.png)}</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="3,58">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>3</number>
+      </property>
+      <property name="topMargin">
+       <number>3</number>
+      </property>
+      <property name="rightMargin">
+       <number>3</number>
+      </property>
+      <property name="bottomMargin">
+       <number>3</number>
+      </property>
       <item>
-       <widget class="QLabel" name="label">
+       <widget class="QWidget" name="widget" native="true"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="main_label">
+        <property name="styleSheet">
+         <string notr="true">#main_label{
+background-color: rgb(2, 10, 20);
+color: rgb(0, 212, 222);
+}
+</string>
+        </property>
         <property name="text">
-         <string>Page Center</string>
+         <string>主相机</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -56,6 +106,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources/images.qrc"/>
+ </resources>
  <connections/>
 </ui>

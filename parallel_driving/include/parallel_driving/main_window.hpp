@@ -46,7 +46,6 @@ public:
 	void closeEvent(QCloseEvent *event); // Overloaded function
 	void showNoMasterMessage();
 
-	QWidget* init_main_page();
 
 	void keyPressEvent(QKeyEvent *event);
 	void keyReleaseEvent(QKeyEvent *event);		// 键盘事件
@@ -55,8 +54,11 @@ public:
 	void sendCtrlCmd();		// 播放ctrl_cmd话题的线程
 	// void sendIOCmd();
 
+	void paintEvent(QPaintEvent* event);
+
 public Q_SLOTS:
 	void openConfigPanel();				// 打开ROS配置页面
+	void closeWindow();
 	void connectByConfig(ConfigInfo* config);	// 处理配置弹窗
 
 	void handleVelocity();				// 处理速度
@@ -73,11 +75,6 @@ private:
 	ConfigPanel *configP;		// ROS配置对话框
 	PageLeft *pageL;			// 左边页面
 	PageCenter *pageC;			// 中间页面
-
-	/*** main window ***/
-	QLabel *title_label;
-	QLabel *main_label;
-	QPushButton *btn_config;
 
 
 	/***** 控制车辆运动的变量 ******/

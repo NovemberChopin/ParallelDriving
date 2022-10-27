@@ -15,6 +15,9 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	, qnode(argc,argv)
 {
 	ui.setupUi(this); 
+
+	this->setAttribute(Qt::WA_QuitOnClose, true);
+
 	configP = new ConfigPanel();
 	pageL = new PageLeft();
 	pageC = new PageCenter();
@@ -38,6 +41,9 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	QObject::connect(&qnode, SIGNAL(getImage_1(cv::Mat)), this, SLOT(setImage_1(cv::Mat)));
 	QObject::connect(&qnode, SIGNAL(getImage_2(cv::Mat)), this, SLOT(setImage_2(cv::Mat)));
 	QObject::connect(&qnode, SIGNAL(getImage_3(cv::Mat)), this, SLOT(setImage_3(cv::Mat)));
+
+	QObject::connect(ui.btn_close, &QPushButton::clicked, this, &MainWindow::closeWindow);
+	QObject::connect(ui.btn_config, &QPushButton::clicked, this, &MainWindow::openConfigPanel);
 	// 登录页面的信号
 	QObject::connect(configP, SIGNAL(getConfigInfo(ConfigInfo*)), this, SLOT(connectByConfig(ConfigInfo*)));
 
@@ -45,7 +51,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	QObject::connect(p_velo_timer, &QTimer::timeout, this, &MainWindow::handleVelocity);
 	QObject::connect(p_steer_timer, &QTimer::timeout, this, &MainWindow::handleSteer);
 
-	this->setCentralWidget(this->init_main_page());
+	// this->setCentralWidget(this->init_main_page());
 }
 
 MainWindow::~MainWindow() {}
@@ -216,42 +222,6 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
 }
 
 
-QWidget* MainWindow::init_main_page() {
-	qDebug() << "init main page";
-	QWidget *main_page = new QWidget(this);
-	QVBoxLayout *layout = new QVBoxLayout;
-	QHBoxLayout *sub_layout = new QHBoxLayout;
-	
-	this->title_label = new QLabel("远程平行驾驶系统", this);
-	this->title_label->setAlignment(Qt::AlignCenter);
-	this->title_label->setMinimumHeight(60);
-	QSizePolicy policy = title_label->sizePolicy();
-	policy.setVerticalPolicy(QSizePolicy::Fixed);
-	policy.setHorizontalStretch(3);
-	this->title_label->setSizePolicy(policy);
-	QFont font;
-	font.setPointSize(20);
-	QPalette pa;
-	pa.setColor(QPalette::WindowText, Qt::blue);
-	this->title_label->setFont(font);
-	this->title_label->setPalette(pa);
-	this->btn_config = new QPushButton("配置ROS", this);
-	QObject::connect(this->btn_config, &QPushButton::clicked, this, &MainWindow::openConfigPanel);
-
-	this->main_label = new QLabel("Camera", this);
-	this->main_label->setAlignment(Qt::AlignCenter);
-
-	sub_layout->addStretch();
-	sub_layout->addWidget(this->title_label);
-	sub_layout->addStretch();
-	sub_layout->addWidget(this->btn_config);
-	layout->addLayout(sub_layout);
-	layout->addWidget(main_label);
-	main_page->setLayout(layout);
-	return main_page;
-}
-
-
 void MainWindow::showNoMasterMessage() {
 	QMessageBox msgBox;
 	msgBox.setText("Couldn't find the ros master.");
@@ -280,7 +250,7 @@ void MainWindow::connectByConfig(ConfigInfo *config) {
         this->showNoMasterMessage();
     } else {
         // 连接成功
-        this->btn_config->setEnabled(false);
+        ui.btn_config->setEnabled(false);
 
 		boost::thread send_ctrl_thread(boost::bind(&MainWindow::sendCtrlCmd, this));
 		// boost::thread send_io_thread(boost::bind(&MainWindow::sendIOCmd, this));
@@ -291,9 +261,25 @@ void MainWindow::connectByConfig(ConfigInfo *config) {
 void MainWindow::setImage_0(cv::Mat img) {
 	QImage qImg = QImage((const unsigned char*)(img.data), img.cols, 
                                 img.rows, img.step, QImage::Format_RGB888);
-	// QImage scaleImg = qImg.scaled(800, 600);
-	this->main_label->setPixmap(QPixmap::fromImage(qImg));
+	QPixmap pixmap = QPixmap::fromImage(qImg);
+	// 右边视频展示
+	QPixmap left_pixmap = pixmap.scaled(ui.label_left->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->ui.label_left->setScaledContents(true);
+	this->ui.label_left->setPixmap(left_pixmap);
+
+	// 设置中间屏幕展示
+	QPixmap main_pixmap = pixmap.scaled(this->pageC->ui->main_label->size(), 
+										Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->pageC->ui->main_label->setScaledContents(true);
+	this->pageC->ui->main_label->setPixmap(QPixmap::fromImage(qImg));
 }
+
+
+// 重写绘图事件
+void MainWindow::paintEvent(QPaintEvent* event) {
+	// this->ui.label_left->resize(this->ui.widget_5->size());
+}
+
 
 void MainWindow::setImage_1(cv::Mat img) {
 	ROS_INFO("img index: %d, size: %d | %d", 1, img.rows, img.cols);
@@ -314,6 +300,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
 	// WriteSettings();
 	QMainWindow::closeEvent(event);
+}
+
+// 关闭软件
+void MainWindow::closeWindow() {
+	this->close();
 }
 
 }  // namespace parallel_driving

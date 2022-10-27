@@ -1,5 +1,53 @@
 <RCC>
     <qresource prefix="/" >
         <file>images/icon.png</file>
+        <file>images/left_page.png</file>
+        
+        <file>images/left/1.png</file>
+        <file>images/left/2.png</file>
+        <file>images/left/3.png</file>
+        <file>images/left/4.png</file>
+        <file>images/left/5.png</file>
+        <file>images/left/6.png</file>
+        <file>images/left/7.png</file>
+        <file>images/left/7.png</file>
+        <file>images/left/9.png</file>
+        <file>images/left/10.png</file>
+        <file>images/left/11.png</file>
+        <file>images/left/12.png</file>
+        <file>images/left/13.png</file>
+        <file>images/left/14.png</file>
+        <file>images/left/15.png</file>
+        <file>images/left/16.png</file>
+        <file>images/left/17.png</file>
+        <file>images/left/18.png</file>
+        <file>images/left/19.png</file>
+        <file>images/left/20.png</file>
+        <file>images/left/21.png</file>
+        <file>images/left/22.png</file>
+        <file>images/left/23.png</file>
+        <file>images/left/24.png</file>
+        <file>images/left/25.png</file>
+        <file>images/left/26.png</file>
+
+
+        <file>images/center_title.png</file>
+        <file>images/center/27.png</file>
+        <file>images/center/28.png</file>
+        <file>images/center/29.png</file>
+        <file>images/center/30.png</file>
+        <file>images/center/31.png</file>
+
+        <file>images/right/32.png</file>
+        <file>images/right/33.png</file>
+        <file>images/right/34.png</file>
+        <file>images/right/35.png</file>
+        <file>images/right/36.png</file>
+        <file>images/right/37.png</file>
+        <file>images/right/38.png</file>
+        <file>images/right/39.png</file>
+        <file>images/right/40.png</file>
+        <file>images/right/41.png</file>
+        
     </qresource>
 </RCC>

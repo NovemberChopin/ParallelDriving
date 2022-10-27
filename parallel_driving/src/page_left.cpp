@@ -10,6 +10,7 @@ PageLeft::PageLeft(QWidget *parent) : QWidget(parent) {
 
     ui = new Ui::PageLeft();
     ui->setupUi(this);
+    this->setAttribute(Qt::WA_QuitOnClose, false);
 }
 
 PageLeft::~PageLeft() {
