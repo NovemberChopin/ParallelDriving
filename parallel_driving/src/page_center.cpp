@@ -13,10 +13,25 @@ PageCenter::PageCenter(QWidget *parent) : QWidget(parent) {
     this->setAttribute(Qt::WA_QuitOnClose, false);
 
     // decorateWidget();
+    // this->setWindowFlags(Qt::Window);
+    // this->showFullScreen();
 }
 
 PageCenter::~PageCenter() {
     delete ui;
+}
+
+
+void PageCenter::keyPressEvent(QKeyEvent *event) {
+    // if (event->key() == Qt::Key_Enter) {    // 回车进入全屏
+    //     this->setWindowFlags(Qt::Window);
+    //     this->showFullScreen();
+    // }
+
+    // if (event->key() == Qt::Key_Escape) {   // esc 退出全屏
+    //     this->setWindowFlags(Qt::SubWindow);
+    //     this->showNormal();
+    // }
 }
 
 

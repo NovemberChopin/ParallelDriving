@@ -76,6 +76,10 @@ void QNode::ctrlCallback(const yhs_can_msgs::ctrl_fb& msg) {
 	// std::cout << "velocity fb is " << msg.ctrl_fb_velocity << " " << msg.ctrl_fb_steering << std::endl;
 	this->velo_fb_ = msg.ctrl_fb_velocity;
 	this->steer_fb_ = msg.ctrl_fb_steering;
+	this->gear_fb_ = msg.ctrl_fb_gear;
+	// 在这里更新速度信息
+	int gear = msg.ctrl_fb_gear;
+	Q_EMIT updateCtrlMsg(gear, this->velo_fb_, this->steer_fb_);
 }
 
 // void QNode::run() {

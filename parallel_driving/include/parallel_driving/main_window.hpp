@@ -61,6 +61,8 @@ public Q_SLOTS:
 	void closeWindow();
 	void connectByConfig(ConfigInfo* config);	// 处理配置弹窗
 
+	void slot_updateCtrlMsg(int gear, float velo, float steer);
+
 	void handleVelocity();				// 处理速度
 	void handleSteer();					// 处理转向角
 

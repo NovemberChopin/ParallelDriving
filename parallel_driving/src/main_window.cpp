@@ -41,7 +41,10 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	QObject::connect(&qnode, SIGNAL(getImage_1(cv::Mat)), this, SLOT(setImage_1(cv::Mat)));
 	QObject::connect(&qnode, SIGNAL(getImage_2(cv::Mat)), this, SLOT(setImage_2(cv::Mat)));
 	QObject::connect(&qnode, SIGNAL(getImage_3(cv::Mat)), this, SLOT(setImage_3(cv::Mat)));
-
+	// 控制信息反馈信号
+	QObject::connect(&qnode, SIGNAL(updateCtrlMsg(int, float, float)), 
+					 this, SLOT(slot_updateCtrlMsg(int, float, float)));
+	
 	QObject::connect(ui.btn_close, &QPushButton::clicked, this, &MainWindow::closeWindow);
 	QObject::connect(ui.btn_config, &QPushButton::clicked, this, &MainWindow::openConfigPanel);
 	// 登录页面的信号
@@ -55,6 +58,41 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 }
 
 MainWindow::~MainWindow() {}
+
+void MainWindow::slot_updateCtrlMsg(int gear, float velo, float steer) {
+	// qDebug() << gear << " " << velo << " " << steer;
+	// 更新速度信息
+	this->pageL->dash_1->setValue(velo);
+	this->pageL->dash_1->update();
+
+	this->pageL->dash_2->setValue(velo);
+	this->pageL->dash_2->update();
+
+	// 更新档位信息
+	switch (gear)
+	{
+	case 1:	
+		/* P */
+		this->pageL->setGear_P();
+		break;
+	case 2:
+		// R
+		this->pageL->setGear_R();
+		break;
+	case 3:
+		// N
+		this->pageL->setGear_N();
+		break;
+	default:
+		// D
+		this->pageL->setGear_D();
+		break;
+	} 
+
+	// 更新方向盘转向
+	this->pageL->updateSteer(steer);
+
+}
 
 void MainWindow::handleSteer() {
 	this->steer_cmd_num++;

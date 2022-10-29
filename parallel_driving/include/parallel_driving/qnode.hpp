@@ -77,11 +77,15 @@ private:
 
 	ros::Subscriber sub_ctrl_fb;
 
+signals:
+	void updateCtrlMsg(int gear, float velo, float steer);
+
 public:
 	ros::Publisher pub_ctrl_cmd;
 	ros::Publisher pub_io_cmd;
 	float velo_fb_ = 0;
 	float steer_fb_ = 0;
+	u_int8_t gear_fb_ = 1;	
 };
 
 }  // namespace parallel_driving

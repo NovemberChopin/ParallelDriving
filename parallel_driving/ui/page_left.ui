@@ -107,52 +107,188 @@
          </property>
          <item>
           <widget class="QWidget" name="control" native="true">
-           <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="3,3,3">
+           <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="4,3,3">
             <item>
              <widget class="QWidget" name="c_left" native="true">
-              <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,5,3,5,0">
+              <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,4,1">
+               <property name="spacing">
+                <number>0</number>
+               </property>
                <item>
-                <spacer name="verticalSpacer_3">
+                <spacer name="horizontalSpacer">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Horizontal</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
-                   <width>20</width>
-                   <height>40</height>
+                   <width>40</width>
+                   <height>20</height>
                   </size>
                  </property>
                 </spacer>
                </item>
                <item>
-                <widget class="QWidget" name="widget_6" native="true">
-                 <property name="styleSheet">
-                  <string notr="true">#widget_6{image: url(:/images/left/21.png)}</string>
-                 </property>
+                <widget class="QWidget" name="dash" native="true">
+                 <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,1,0,1,0">
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <spacer name="verticalSpacer_3">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QWidget" name="dash_1" native="true">
+                    <property name="styleSheet">
+                     <string notr="true"/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_6">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QWidget" name="dash_2" native="true">
+                    <property name="styleSheet">
+                     <string notr="true"/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
                 </widget>
                </item>
                <item>
-                <widget class="QWidget" name="widget_7" native="true"/>
-               </item>
-               <item>
-                <widget class="QWidget" name="widget_8" native="true">
-                 <property name="styleSheet">
-                  <string notr="true">#widget_8{image: url(:/images/left/22.png)}</string>
-                 </property>
+                <widget class="QWidget" name="gear" native="true">
+                 <layout class="QVBoxLayout" name="verticalLayout_10" stretch="4,3,6">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                  <property name="leftMargin">
+                   <number>10</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>9</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>9</number>
+                  </property>
+                  <item>
+                   <spacer name="verticalSpacer_8">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QWidget" name="gear_group" native="true">
+                    <property name="styleSheet">
+                     <string notr="true">#gear_group{border-image: url(:/images/left/10.png);}</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_11">
+                     <property name="spacing">
+                      <number>2</number>
+                     </property>
+                     <property name="leftMargin">
+                      <number>4</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>4</number>
+                     </property>
+                     <property name="rightMargin">
+                      <number>4</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>4</number>
+                     </property>
+                     <item>
+                      <widget class="QWidget" name="gear_P" native="true">
+                       <property name="styleSheet">
+                        <string notr="true">#gear_R{image: url(:/images/left/14.png);}</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QWidget" name="gear_R" native="true">
+                       <property name="styleSheet">
+                        <string notr="true">#gear_P{image: url(:/images/left/12.png);}</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QWidget" name="gear_N" native="true">
+                       <property name="styleSheet">
+                        <string notr="true">#gear_N{image: url(:/images/left/16.png);}</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QWidget" name="gear_D" native="true">
+                       <property name="styleSheet">
+                        <string notr="true">#gear_D{image: url(:/images/left/19.png);}
+
+</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_7">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
                 </widget>
-               </item>
-               <item>
-                <spacer name="verticalSpacer_2">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
                </item>
               </layout>
              </widget>
@@ -260,9 +396,9 @@
                 <widget class="QWidget" name="widget_10" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_7" stretch="3,1,0">
                   <item>
-                   <widget class="QWidget" name="widget_14" native="true">
+                   <widget class="QWidget" name="show_steer" native="true">
                     <property name="styleSheet">
-                     <string notr="true">#widget_14{image: url(:/images/left/6.png)}</string>
+                     <string notr="true"/>
                     </property>
                    </widget>
                   </item>

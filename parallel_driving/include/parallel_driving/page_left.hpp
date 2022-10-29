@@ -3,8 +3,11 @@
 
 #include <QWidget>
 #include <QString>
+#include <QVBoxLayout>
 
 #include "ui_page_left.h"
+#include "dashboard.hpp"
+#include "mylabel.hpp"
 
 namespace parallel_driving {
 
@@ -17,13 +20,30 @@ public:
     explicit PageLeft(QWidget *parent = 0);
     ~PageLeft();
 
+    void updateSteer(double angle);
 
-Q_SIGNALS:
-
-
-private:
+    void setGear_P();
+    void setGear_R();
+    void setGear_N();
+    void setGear_D();
 
     Ui::PageLeft* ui;
+    Dashboard *dash_1;
+    Dashboard *dash_2;
+
+private:
+    QString gear_P = "image: url(:/images/left/14.png);";
+    QString gear_P_s = "border-image: url(:/images/left/13.png);";
+    QString gear_R = "image: url(:/images/left/12.png);";
+    QString gear_R_s = "border-image: url(:/images/left/11.png);";
+    QString gear_N = "image: url(:/images/left/16.png);";
+    QString gear_N_s = "border-image: url(:/images/left/15.png);";
+    QString gear_D = "image: url(:/images/left/19.png);";
+    QString gear_D_s = "border-image: url(:/images/left/17.png);";
+
+    MyLabel *my_label;
+Q_SIGNALS:    
+
 };
 
 }

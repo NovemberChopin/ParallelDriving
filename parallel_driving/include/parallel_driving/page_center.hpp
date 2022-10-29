@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QString>
+#include <QKeyEvent>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
@@ -25,6 +26,8 @@ public:
     void setCenterImage(cv::Mat img); 
 
     void decorateWidget();      // 修饰样式
+
+    void keyPressEvent(QKeyEvent *event);
 
 Q_SIGNALS:
 
