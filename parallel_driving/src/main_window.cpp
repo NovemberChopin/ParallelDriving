@@ -300,22 +300,39 @@ void MainWindow::setImage_0(cv::Mat img) {
 	QImage qImg = QImage((const unsigned char*)(img.data), img.cols, 
                                 img.rows, img.step, QImage::Format_RGB888);
 	QPixmap pixmap = QPixmap::fromImage(qImg);
-	// 右边视频展示
-	QPixmap left_pixmap = pixmap.scaled(ui.label_left->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	this->ui.label_left->setScaledContents(true);
-	this->ui.label_left->setPixmap(left_pixmap);
+	// 右上视频
+	QPixmap right_pixmap_up = pixmap.scaled(ui.right_img_up->size(), 
+										Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->ui.right_img_up->setScaledContents(true);
+	this->ui.right_img_up->setPixmap(right_pixmap_up);
+	// 右下视频
+	QPixmap right_pixmap_down = pixmap.scaled(ui.right_img_down->size(), 
+										Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->ui.right_img_down->setScaledContents(true);
+	this->ui.right_img_down->setPixmap(right_pixmap_down);
 
 	// 设置中间屏幕展示
 	QPixmap main_pixmap = pixmap.scaled(this->pageC->ui->main_label->size(), 
 										Qt::KeepAspectRatio, Qt::SmoothTransformation);
 	this->pageC->ui->main_label->setScaledContents(true);
 	this->pageC->ui->main_label->setPixmap(QPixmap::fromImage(qImg));
+
+	// 左上视频
+	QPixmap left_pixmap_up = pixmap.scaled(this->pageL->ui->left_img_up->size(), 
+										Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->pageL->ui->left_img_up->setScaledContents(true);
+	this->pageL->ui->left_img_up->setPixmap(left_pixmap_up);
+	// 右下视频
+	QPixmap left_pixmap_down = pixmap.scaled(this->pageL->ui->left_img_down->size(), 
+										Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->pageL->ui->left_img_down->setScaledContents(true);
+	this->pageL->ui->left_img_down->setPixmap(left_pixmap_down);
 }
 
 
 // 重写绘图事件
 void MainWindow::paintEvent(QPaintEvent* event) {
-	// this->ui.label_left->resize(this->ui.widget_5->size());
+
 }
 
 

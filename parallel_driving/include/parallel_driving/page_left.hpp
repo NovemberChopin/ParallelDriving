@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QString>
+#include <QTime>
+#include <QTimer>
 #include <QVBoxLayout>
 
 #include "ui_page_left.h"
@@ -31,6 +33,13 @@ public:
     Dashboard *dash_1;
     Dashboard *dash_2;
 
+    QTimer *timer;
+
+    // 计时器相关
+    // QTimer *timer;
+    // int minute;
+    // int second;
+
 private:
     QString gear_P = "image: url(:/images/left/14.png);";
     QString gear_P_s = "border-image: url(:/images/left/13.png);";
@@ -41,8 +50,13 @@ private:
     QString gear_D = "image: url(:/images/left/19.png);";
     QString gear_D_s = "border-image: url(:/images/left/17.png);";
 
+    QString steer_dark = "image: url(:/images/left/27.png);";
+    QString steer_green = "image: url(:/images/left/28.png);";
+
     MyLabel *my_label;
-Q_SIGNALS:    
+
+public Q_SLOTS:
+    void timeout_slot();
 
 };
 

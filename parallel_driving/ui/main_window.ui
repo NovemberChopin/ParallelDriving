@@ -152,6 +152,123 @@
             <property name="styleSheet">
              <string notr="true">#img_up{border-image: url(:/images/right/33.png);}</string>
             </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="100,9">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QWidget" name="widget_7" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0">
+                <item>
+                 <widget class="QWidget" name="widget_8" native="true">
+                  <layout class="QVBoxLayout" name="verticalLayout_10" stretch="12,35,18">
+                   <property name="spacing">
+                    <number>0</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <spacer name="verticalSpacer">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QWidget" name="widget_9" native="true">
+                     <layout class="QVBoxLayout" name="verticalLayout_11">
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="right_img_up">
+                        <property name="styleSheet">
+                         <string notr="true">#right_img_up{color: rgb(0, 212, 222);}</string>
+                        </property>
+                        <property name="text">
+                         <string>右前相机</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="verticalSpacer_2">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </widget>
           </item>
           <item>
@@ -188,9 +305,9 @@
                  <number>9</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="label_left">
+                 <widget class="QLabel" name="right_img_down">
                   <property name="styleSheet">
-                   <string notr="true">#label_left{
+                   <string notr="true">#right_img_down{
 	color: rgb(0, 212, 222);
 	background-color: rgb(2, 10, 20);
 }</string>

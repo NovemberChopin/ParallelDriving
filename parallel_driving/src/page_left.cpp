@@ -12,6 +12,10 @@ PageLeft::PageLeft(QWidget *parent) : QWidget(parent) {
     ui->setupUi(this);
     this->setAttribute(Qt::WA_QuitOnClose, false);
 
+    timer = new QTimer();
+    timer->start(1000);
+    QObject::connect(timer, &QTimer::timeout, this, &PageLeft::timeout_slot);
+
     // 尽量把组件放在布局里面，这样可以自适应页面
     QVBoxLayout *layout_1 = new QVBoxLayout();
     dash_1 = new Dashboard();
@@ -41,16 +45,37 @@ PageLeft::~PageLeft() {
 }
 
 
+void PageLeft::timeout_slot() {
+    QTime timeNow = QTime::currentTime();
+    ui->cur_time->setText(tr("%1").arg(timeNow.toString()));
+}
+
+
 /**
  * @brief 更新界面绘制事件
  * 
  * @param angle 小车返回的角度
- * 注意：小车返回的角度和实际旋转的角度存在一个映射关系
+ * 注意：小车返回的角度和实际旋转的角度存在一个映射关系, 
+ * scale 表示小车实际转向与方向盘旋转的对应关系 [-25, 25] -> [-100, 100]
  */
 void PageLeft::updateSteer(double angle) {
+    if (angle > 0) {
+        ui->steer_left->setStyleSheet(this->steer_dark);
+        ui->steer_right->setStyleSheet(this->steer_green);
+    } else if (angle < 0) {
+        ui->steer_left->setStyleSheet(this->steer_green);
+        ui->steer_right->setStyleSheet(this->steer_dark);
+    } else {
+        ui->steer_left->setStyleSheet(this->steer_dark);
+        ui->steer_right->setStyleSheet(this->steer_dark);
+    }
+    int scale = 4;
     double base_angle = 120;
-    my_label->setAngle(angle + base_angle);
+    my_label->setAngle(angle * 4 + base_angle);
     my_label->update();
+
+    QString str = QString("%1").arg(angle);
+    ui->steer_val->setText(str);
 }
 
 

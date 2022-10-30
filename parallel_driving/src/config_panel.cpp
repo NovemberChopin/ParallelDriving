@@ -51,6 +51,7 @@ void ConfigPanel::initWindow() {
     // setWindowButtonType(QBasePara::TypeDialog::None_Dialog);
     //设置窗体关闭后是否释放内存
 	setAttribute(Qt::WA_DeleteOnClose, false);
+    // ui->ros_connect->setStyleSheet(" border: 2px solid #000000");
 }
 
 void ConfigPanel::ros_connect_clicked() {
