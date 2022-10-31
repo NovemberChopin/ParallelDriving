@@ -13,6 +13,8 @@
 #include <QMainWindow>
 #include <QKeyEvent>
 #include <QTimer>
+#include <QMenu>
+#include <QAction>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
@@ -43,6 +45,8 @@ public:
 	MainWindow(int argc, char** argv, QWidget *parent = 0);
 	~MainWindow();
 
+	void initWindow();		// 初始化界面相关
+
 	void closeEvent(QCloseEvent *event); // Overloaded function
 	void showNoMasterMessage();
 
@@ -71,6 +75,9 @@ public Q_SLOTS:
 	void setImage_2(cv::Mat img);
 	void setImage_3(cv::Mat img);
 
+	/* 界面相关槽函数 */
+	void menu_pop_load_config();
+
 private:
 	Ui::MainWindowDesign ui;
 	QNode qnode;				// ROS节点相关
@@ -78,6 +85,10 @@ private:
 	PageLeft *pageL;			// 左边页面
 	PageCenter *pageC;			// 中间页面
 
+
+	/***** 右键弹出菜单变量 ******/
+	QMenu *p_Menu;
+	QAction *p_load_action;
 
 	/***** 控制车辆运动的变量 ******/
 	yhs_can_msgs::ctrl_cmd ctrl_msg_;

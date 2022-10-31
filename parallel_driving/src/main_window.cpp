@@ -25,6 +25,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	p_velo_timer = new QTimer(this);
 	p_steer_timer = new QTimer(this);
 
+	/* 初始化 ctrl_cmd 话题数据 */
 	u_int8_t gear = 1;				// 初始化时候为驻车
 	u_int8_t brake = 0;
 	float velocity = 0.0;
@@ -34,7 +35,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	this->ctrl_msg_.ctrl_cmd_steering = steer;
 	this->ctrl_msg_.ctrl_cmd_Brake = brake;
 
-	setWindowIcon(QIcon(":/images/icon.png"));
+	this->initWindow();		// 初始化界面
 	// ros 节点信号
     QObject::connect(&qnode, SIGNAL(rosShutdown()), this, SLOT(close()));
 	QObject::connect(&qnode, SIGNAL(getImage_0(cv::Mat)), this, SLOT(setImage_0(cv::Mat)));
@@ -58,6 +59,37 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 }
 
 MainWindow::~MainWindow() {}
+
+
+void MainWindow::initWindow() {
+	setWindowIcon(QIcon(":/images/icon.png"));
+
+	this->p_Menu = new QMenu(this);
+	this->p_load_action = new QAction(QStringLiteral("加载相机配置"), this);
+	this->p_Menu->addAction(this->p_load_action);
+	QObject::connect(this->p_load_action, &QAction::triggered, this, &MainWindow::menu_pop_load_config);
+	
+	// this->ui.right_img_up->setContextMenuPolicy(Qt::CustomContextMenu);
+	// this->ui.right_img_down->setContextMenuPolicy(Qt::CustomContextMenu);
+
+	QObject::connect(this->ui.right_img_up, &QLabel::customContextMenuRequested, [=](){
+		this->p_Menu->exec(QCursor::pos());
+	});
+	QObject::connect(this->ui.right_img_down, &QLabel::customContextMenuRequested, [=](){
+		this->p_Menu->exec(QCursor::pos());
+	});
+}
+
+void MainWindow::menu_pop_load_config() {
+	if(this->ui.right_img_up->geometry().contains(this->mapFromGlobal(QCursor::pos()))) {
+		qDebug() << "POP MENU UP";
+	}
+	
+	if(this->ui.right_img_down->geometry().contains(this->mapFromGlobal(QCursor::pos()))) {
+		qDebug() << "POP MENU DOWN";
+	}
+}
+
 
 void MainWindow::slot_updateCtrlMsg(int gear, float velo, float steer) {
 	// qDebug() << gear << " " << velo << " " << steer;
