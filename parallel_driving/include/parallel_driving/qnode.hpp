@@ -61,6 +61,7 @@ Q_SIGNALS:
 	void getImage_1(cv::Mat img);
 	void getImage_2(cv::Mat img);
 	void getImage_3(cv::Mat img);
+	void getImage_4(cv::Mat img);
 
 private:
 	int init_argc;
@@ -72,6 +73,7 @@ private:
 	image_transport::Subscriber image_sub2;
 	image_transport::Subscriber image_sub3;
 	image_transport::Subscriber image_sub4;
+	image_transport::Subscriber image_sub5;
 
 	yhs_can_msgs::ctrl_cmd ctrl_msg_;
 

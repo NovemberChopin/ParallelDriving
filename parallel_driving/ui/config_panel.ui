@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>454</width>
-    <height>466</height>
+    <width>441</width>
+    <height>517</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -46,7 +46,7 @@
     <widget class="QWidget" name="widget" native="true">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <spacer name="verticalSpacer_2">
+       <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
@@ -141,7 +141,7 @@
             <string notr="true">#label_3{color: rgb(0, 212, 222);}</string>
            </property>
            <property name="text">
-            <string>相机话题1</string>
+            <string>前相机</string>
            </property>
           </widget>
          </item>
@@ -172,7 +172,7 @@
             <string notr="true">#label_4{color: rgb(0, 212, 222);}</string>
            </property>
            <property name="text">
-            <string>相机话题2</string>
+            <string>左前相机</string>
            </property>
           </widget>
          </item>
@@ -203,7 +203,7 @@
             <string notr="true">#label_5{color: rgb(0, 212, 222);}</string>
            </property>
            <property name="text">
-            <string>相机话题3</string>
+            <string>左后相机</string>
            </property>
           </widget>
          </item>
@@ -240,12 +240,43 @@
             <string notr="true">#label_6{color: rgb(0, 212, 222);}</string>
            </property>
            <property name="text">
-            <string>相机话题4</string>
+            <string>右前相机</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="ros_topic_4"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="widget_9" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">#label_7{color: rgb(0, 212, 222);}</string>
+           </property>
+           <property name="text">
+            <string>右后相机</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="ros_topic_5"/>
          </item>
         </layout>
        </widget>
@@ -295,7 +326,7 @@ color: rgb(0, 212, 222);
        </widget>
       </item>
       <item>
-       <spacer name="verticalSpacer">
+       <spacer name="verticalSpacer_2">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>

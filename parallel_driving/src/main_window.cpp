@@ -8,7 +8,7 @@
 namespace parallel_driving {
 
 using namespace Qt;
-
+using namespace cv;
 
 MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	: QMainWindow(parent)
@@ -24,6 +24,20 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 
 	p_velo_timer = new QTimer(this);
 	p_steer_timer = new QTimer(this);
+
+	this->cam_num = 5;			// 相机数量
+	
+	/* 初始化相机参数变量 */
+	image_size = cv::Size(1280, 720);
+	cv::Mat m(3, 5, CV_32FC1, Scalar(1));
+	for (int i=0; i < cam_num; i++) {       // 初始化 ROI
+        // cur_frame.push_back(fill_img);
+        this->vec_hasLoadCameraMatrix.push_back(false);
+        this->vec_cameraMatrix.push_back(m);
+        this->vec_distCoeffs.push_back(m);
+        this->vec_map1.push_back(m);
+        this->vec_map2.push_back(m);
+    }
 
 	/* 初始化 ctrl_cmd 话题数据 */
 	u_int8_t gear = 1;				// 初始化时候为驻车
@@ -42,6 +56,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	QObject::connect(&qnode, SIGNAL(getImage_1(cv::Mat)), this, SLOT(setImage_1(cv::Mat)));
 	QObject::connect(&qnode, SIGNAL(getImage_2(cv::Mat)), this, SLOT(setImage_2(cv::Mat)));
 	QObject::connect(&qnode, SIGNAL(getImage_3(cv::Mat)), this, SLOT(setImage_3(cv::Mat)));
+	QObject::connect(&qnode, SIGNAL(getImage_4(cv::Mat)), this, SLOT(setImage_4(cv::Mat)));
 	// 控制信息反馈信号
 	QObject::connect(&qnode, SIGNAL(updateCtrlMsg(int, float, float)), 
 					 this, SLOT(slot_updateCtrlMsg(int, float, float)));
@@ -62,32 +77,66 @@ MainWindow::~MainWindow() {}
 
 
 void MainWindow::initWindow() {
-	setWindowIcon(QIcon(":/images/icon.png"));
+	this->setWindowTitle("平行驾驶-右");
+	setWindowIcon(QIcon(":/images/logo.jpg"));
 
 	this->p_Menu = new QMenu(this);
 	this->p_load_action = new QAction(QStringLiteral("加载相机配置"), this);
 	this->p_Menu->addAction(this->p_load_action);
 	QObject::connect(this->p_load_action, &QAction::triggered, this, &MainWindow::menu_pop_load_config);
 	
-	// this->ui.right_img_up->setContextMenuPolicy(Qt::CustomContextMenu);
-	// this->ui.right_img_down->setContextMenuPolicy(Qt::CustomContextMenu);
+	this->pageC->ui->main_label->setContextMenuPolicy(Qt::CustomContextMenu);
+	this->pageL->ui->left_img_up->setContextMenuPolicy(Qt::CustomContextMenu);
+	this->pageL->ui->left_img_down->setContextMenuPolicy(Qt::CustomContextMenu);
+	this->ui.right_img_up->setContextMenuPolicy(Qt::CustomContextMenu);
+	this->ui.right_img_down->setContextMenuPolicy(Qt::CustomContextMenu);
 
+	QObject::connect(this->pageC->ui->main_label, &QLabel::customContextMenuRequested, [=](){
+		this->cur_cam_index = 0;
+		this->p_Menu->exec(QCursor::pos());
+	});
+	QObject::connect(this->pageL->ui->left_img_up, &QLabel::customContextMenuRequested, [=](){
+		this->cur_cam_index = 1;
+		this->p_Menu->exec(QCursor::pos());
+	});
+	QObject::connect(this->pageL->ui->left_img_down, &QLabel::customContextMenuRequested, [=](){
+		this->cur_cam_index = 2;
+		this->p_Menu->exec(QCursor::pos());
+	});
 	QObject::connect(this->ui.right_img_up, &QLabel::customContextMenuRequested, [=](){
+		this->cur_cam_index = 3;
 		this->p_Menu->exec(QCursor::pos());
 	});
 	QObject::connect(this->ui.right_img_down, &QLabel::customContextMenuRequested, [=](){
+		this->cur_cam_index = 4;
 		this->p_Menu->exec(QCursor::pos());
 	});
 }
 
 void MainWindow::menu_pop_load_config() {
-	if(this->ui.right_img_up->geometry().contains(this->mapFromGlobal(QCursor::pos()))) {
-		qDebug() << "POP MENU UP";
-	}
-	
-	if(this->ui.right_img_down->geometry().contains(this->mapFromGlobal(QCursor::pos()))) {
-		qDebug() << "POP MENU DOWN";
-	}
+	qDebug() << "cur_cam_index: " << cur_cam_index;
+	this->loadCameraMatrix(this->cur_cam_index);
+}
+
+
+void MainWindow::loadCameraMatrix(int cam_index) {
+	qDebug() << "menu_pop_load_config";
+    QString filename = QFileDialog::getOpenFileName(this, "Open", "./", "(*.yml)");
+    if (filename.isEmpty()) 
+        return;
+	cv::Mat cameraMatrix, distCoeffs;
+    cv::Mat map1, map2;
+	// 读取相机内参
+	cv::FileStorage cameraPameras(filename.toStdString(), cv::FileStorage::READ);
+    cameraPameras["camera_matrix"] >> cameraMatrix;
+    cameraPameras["dist_coeffs"] >> distCoeffs;
+    this->vec_cameraMatrix[cam_index] = cameraMatrix;
+    this->vec_distCoeffs[cam_index] = distCoeffs;
+	// 计算修复畸变的映射矩阵
+	cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, Mat(), cameraMatrix, image_size, CV_16SC2, map1, map2);
+    this->vec_map1[cam_index] = map1;
+    this->vec_map2[cam_index] = map2;
+	this->vec_hasLoadCameraMatrix[cam_index] = true;
 }
 
 
@@ -328,39 +377,6 @@ void MainWindow::connectByConfig(ConfigInfo *config) {
 }
 
 
-void MainWindow::setImage_0(cv::Mat img) {
-	QImage qImg = QImage((const unsigned char*)(img.data), img.cols, 
-                                img.rows, img.step, QImage::Format_RGB888);
-	QPixmap pixmap = QPixmap::fromImage(qImg);
-	// 右上视频
-	QPixmap right_pixmap_up = pixmap.scaled(ui.right_img_up->size(), 
-										Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	this->ui.right_img_up->setScaledContents(true);
-	this->ui.right_img_up->setPixmap(right_pixmap_up);
-	// 右下视频
-	QPixmap right_pixmap_down = pixmap.scaled(ui.right_img_down->size(), 
-										Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	this->ui.right_img_down->setScaledContents(true);
-	this->ui.right_img_down->setPixmap(right_pixmap_down);
-
-	// 设置中间屏幕展示
-	QPixmap main_pixmap = pixmap.scaled(this->pageC->ui->main_label->size(), 
-										Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	this->pageC->ui->main_label->setScaledContents(true);
-	this->pageC->ui->main_label->setPixmap(QPixmap::fromImage(qImg));
-
-	// 左上视频
-	QPixmap left_pixmap_up = pixmap.scaled(this->pageL->ui->left_img_up->size(), 
-										Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	this->pageL->ui->left_img_up->setScaledContents(true);
-	this->pageL->ui->left_img_up->setPixmap(left_pixmap_up);
-	// 右下视频
-	QPixmap left_pixmap_down = pixmap.scaled(this->pageL->ui->left_img_down->size(), 
-										Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	this->pageL->ui->left_img_down->setScaledContents(true);
-	this->pageL->ui->left_img_down->setPixmap(left_pixmap_down);
-}
-
 
 // 重写绘图事件
 void MainWindow::paintEvent(QPaintEvent* event) {
@@ -368,18 +384,71 @@ void MainWindow::paintEvent(QPaintEvent* event) {
 }
 
 
+QPixmap MainWindow::fixImage(cv::Mat img, int cam_index) {
+	cv::Mat imageCalib;     // 畸变修复后的图像
+	if (this->vec_hasLoadCameraMatrix[cam_index]) {
+		cv::remap(img, imageCalib, this->vec_map1[cam_index], this->vec_map2[cam_index], INTER_LINEAR);
+	} else {
+		imageCalib = img;
+	}
+	QImage qImg = QImage((const unsigned char*)(imageCalib.data), imageCalib.cols, 
+                                imageCalib.rows, imageCalib.step, QImage::Format_RGB888);
+	QPixmap pixmap = QPixmap::fromImage(qImg);
+	return pixmap;
+}
+
+
+// 中间大屏显示的相机图像
+void MainWindow::setImage_0(cv::Mat img) {
+	QPixmap pixmap = this->fixImage(img, 0);
+	// 设置中间屏幕展示
+	QPixmap main_pixmap = pixmap.scaled(this->pageC->ui->main_label->size(), 
+										Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->pageC->ui->main_label->setScaledContents(true);
+	this->pageC->ui->main_label->setPixmap(main_pixmap);
+}
+
+
+// 左屏幕上方相机
 void MainWindow::setImage_1(cv::Mat img) {
-	ROS_INFO("img index: %d, size: %d | %d", 1, img.rows, img.cols);
+	QPixmap pixmap = this->fixImage(img, 1);
+
+	// 左上视频
+	QPixmap left_pixmap_up = pixmap.scaled(this->pageL->ui->left_img_up->size(), 
+										Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->pageL->ui->left_img_up->setScaledContents(true);
+	this->pageL->ui->left_img_up->setPixmap(left_pixmap_up);
 }
 
-
+// 左屏幕下方相机
 void MainWindow::setImage_2(cv::Mat img) {
-	ROS_INFO("img index: %d, size: %d | %d", 2, img.rows, img.cols);
+	QPixmap pixmap = this->fixImage(img, 2);
+	// 左下视频
+	QPixmap left_pixmap_down = pixmap.scaled(this->pageL->ui->left_img_down->size(), 
+										Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->pageL->ui->left_img_down->setScaledContents(true);
+	this->pageL->ui->left_img_down->setPixmap(left_pixmap_down);
+}
+
+// 右上视频
+void MainWindow::setImage_3(cv::Mat img) {
+	QPixmap pixmap = this->fixImage(img, 3);
+	// 右上视频
+	QPixmap right_pixmap_up = pixmap.scaled(ui.right_img_up->size(), 
+										Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->ui.right_img_up->setScaledContents(true);
+	this->ui.right_img_up->setPixmap(right_pixmap_up);
 }
 
 
-void MainWindow::setImage_3(cv::Mat img) {
-	ROS_INFO("img index: %d, size: %d | %d", 3, img.rows, img.cols);
+// 右下视频
+void MainWindow::setImage_4(cv::Mat img) {
+	QPixmap pixmap = this->fixImage(img, 4);
+	// 右下视频
+	QPixmap right_pixmap_down = pixmap.scaled(ui.right_img_down->size(), 
+										Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	this->ui.right_img_down->setScaledContents(true);
+	this->ui.right_img_down->setPixmap(right_pixmap_down);
 }
 
 

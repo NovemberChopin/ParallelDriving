@@ -24,6 +24,7 @@ ConfigPanel::ConfigPanel(QWidget *parent) :
     ui->ros_topic_2->setText("/hik_cam_node/hik_camera2");
     ui->ros_topic_3->setText("/hik_cam_node/hik_camera3");
     ui->ros_topic_4->setText("/hik_cam_node/hik_camera4");
+    ui->ros_topic_5->setText("/hik_cam_node/hik_camera5");
     initWindow();
 }
 
@@ -71,7 +72,9 @@ void ConfigPanel::ros_connect_clicked() {
     QString topic_4 = ui->ros_topic_4->text();
     if (!topic_4.isEmpty())
         configInfo->imageTopics.push_back(topic_4);
-    
+    QString topic_5 = ui->ros_topic_5->text();
+    if (!topic_5.isEmpty())
+        configInfo->imageTopics.push_back(topic_5);
     Q_EMIT getConfigInfo(configInfo);
 
     // 判断是否连接成功

@@ -145,11 +145,23 @@ void QNode::run() {
 		ros::SingleThreadedSpinner spinner_d;
 		spinner_d.spin(&callback_queue_d);
 	});
+
+	ros::NodeHandle n_e;
+	ros::CallbackQueue callback_queue_e;
+	n_e.setCallbackQueue(&callback_queue_e);
+	image_transport::ImageTransport it_e(n_e);
+	topic = this->configInfo->imageTopics.at(4).toStdString();
+	image_sub5 = it_e.subscribe(topic, 1, boost::bind(&QNode::ImgCallback, this, _1, 4));
+	std::thread spinner_thread_e([&callback_queue_e](){
+		ros::SingleThreadedSpinner spinner_e;
+		spinner_e.spin(&callback_queue_e);
+	});
 	ros::spin();
 	spinner_thread_a.join();
 	spinner_thread_b.join();
 	spinner_thread_c.join();
 	spinner_thread_d.join();
+	spinner_thread_e.join();
 }
 
 void QNode::ImgCallback(const sensor_msgs::ImageConstPtr &msg, int cam_index) {
@@ -163,8 +175,10 @@ void QNode::ImgCallback(const sensor_msgs::ImageConstPtr &msg, int cam_index) {
 			Q_EMIT getImage_1(img);
 		} else if (cam_index == 2) {
 			Q_EMIT getImage_2(img);
-		} else {
+		} else if (cam_index == 3) {
 			Q_EMIT getImage_3(img);
+		} else {
+			Q_EMIT getImage_4(img);
 		}	
     } catch (cv_bridge::Exception& e) {
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());

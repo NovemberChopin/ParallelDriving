@@ -15,6 +15,7 @@
 #include <QTimer>
 #include <QMenu>
 #include <QAction>
+#include <QFileDialog>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
@@ -60,6 +61,9 @@ public:
 
 	void paintEvent(QPaintEvent* event);
 
+	void loadCameraMatrix(int cam_index);	// 加载相机参数
+	QPixmap fixImage(cv::Mat img, int cam_index);// 修复并转换图像
+
 public Q_SLOTS:
 	void openConfigPanel();				// 打开ROS配置页面
 	void closeWindow();
@@ -74,6 +78,7 @@ public Q_SLOTS:
 	void setImage_1(cv::Mat img);
 	void setImage_2(cv::Mat img);
 	void setImage_3(cv::Mat img);
+	void setImage_4(cv::Mat img);
 
 	/* 界面相关槽函数 */
 	void menu_pop_load_config();
@@ -85,10 +90,23 @@ private:
 	PageLeft *pageL;			// 左边页面
 	PageCenter *pageC;			// 中间页面
 
+	int cam_num;				// 相机数量
+	// 相机参数
+	std::vector<bool> vec_hasLoadCameraMatrix;
+	bool hasLoadCameraMatrix;						// 是否加载了相机相关参数
+	std::vector<cv::Mat> vec_cameraMatrix;			// 相机内参矩阵
+	std::vector<cv::Mat> vec_distCoeffs;			// 相机畸变参数
+	std::vector<cv::Mat> vec_map1, vec_map2;		// 畸变修复映射矩阵
+	cv::Size image_size;
+
 
 	/***** 右键弹出菜单变量 ******/
 	QMenu *p_Menu;
 	QAction *p_load_action;
+	// 当前右键菜单所在的相机
+	// left_up left_down main right_up right_down
+	// 1 2 0 3 4
+	int cur_cam_index;			
 
 	/***** 控制车辆运动的变量 ******/
 	yhs_can_msgs::ctrl_cmd ctrl_msg_;

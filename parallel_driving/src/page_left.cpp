@@ -11,6 +11,7 @@ PageLeft::PageLeft(QWidget *parent) : QWidget(parent) {
     ui = new Ui::PageLeft();
     ui->setupUi(this);
     this->setAttribute(Qt::WA_QuitOnClose, false);
+    this->setWindowTitle("平行驾驶-左");
 
     timer = new QTimer();
     timer->start(1000);
@@ -70,7 +71,7 @@ void PageLeft::updateSteer(double angle) {
         ui->steer_right->setStyleSheet(this->steer_dark);
     }
     int scale = 4;
-    double base_angle = 120;
+    double base_angle = 115;    // 图片初始时的偏的角度
     my_label->setAngle(angle * 4 + base_angle);
     my_label->update();
 

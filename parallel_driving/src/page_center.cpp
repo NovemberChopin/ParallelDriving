@@ -11,6 +11,7 @@ PageCenter::PageCenter(QWidget *parent) : QWidget(parent) {
     ui = new Ui::PageCenter();
     ui->setupUi(this);
     this->setAttribute(Qt::WA_QuitOnClose, false);
+    this->setWindowTitle("平行驾驶-中");
 
     // decorateWidget();
     // this->setWindowFlags(Qt::Window);
