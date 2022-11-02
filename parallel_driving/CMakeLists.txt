@@ -5,6 +5,10 @@
 cmake_minimum_required(VERSION 2.8.0)
 project(parallel_driving)
 
+set(OpenCV_DIR "/home/js/shareFolder/opencv/build")
+set(cv_bridge_DIR /home/js/catkin_cx07/devel/share/cv_bridge/cmake)
+
+
 ## add
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 

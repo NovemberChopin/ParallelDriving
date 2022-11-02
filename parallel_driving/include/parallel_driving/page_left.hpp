@@ -6,6 +6,7 @@
 #include <QTime>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <QtMath>
 
 #include "ui_page_left.h"
 #include "dashboard.hpp"

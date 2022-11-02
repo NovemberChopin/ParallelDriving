@@ -50,6 +50,8 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	this->ctrl_msg_.ctrl_cmd_Brake = brake;
 
 	this->initWindow();		// 初始化界面
+	// QT类获取键盘焦点时才可以获取事件，当页面布局复杂时，焦点可能不在该类中。
+	this->setFocusPolicy(Qt::StrongFocus);
 	// ros 节点信号
     QObject::connect(&qnode, SIGNAL(rosShutdown()), this, SLOT(close()));
 	QObject::connect(&qnode, SIGNAL(getImage_0(cv::Mat)), this, SLOT(setImage_0(cv::Mat)));
@@ -179,10 +181,10 @@ void MainWindow::handleSteer() {
 	this->steer_cmd_num++;
 	float steer = 0;
 	if (key_left) {
-		steer = qnode.steer_fb_ - 0.05 * steer_cmd_num;
+		steer = qnode.steer_fb_ + 0.05 * steer_cmd_num;
 		if (steer < -25.0)	steer = -25.0;
 	} else {
-		steer = qnode.steer_fb_ + 0.05 * steer_cmd_num;
+		steer = qnode.steer_fb_ - 0.05 * steer_cmd_num;
 		if (steer > 25.0)  steer = 25.0;
 	}
 	this->ctrl_msg_.ctrl_cmd_steering = steer;
@@ -301,7 +303,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
 	if (event->key() == Qt::Key_Up) {
 		if (event->isAutoRepeat()) return;
 		key_up = false;
-		qDebug() << "Key_down release" << key_up;
+		qDebug() << "Key_Up release" << key_up;
 		// 改为空挡
 		this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
 		if (p_velo_timer->isActive() == true) {

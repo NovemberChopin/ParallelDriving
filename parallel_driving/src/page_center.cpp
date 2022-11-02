@@ -23,19 +23,6 @@ PageCenter::~PageCenter() {
 }
 
 
-void PageCenter::keyPressEvent(QKeyEvent *event) {
-    // if (event->key() == Qt::Key_Enter) {    // 回车进入全屏
-    //     this->setWindowFlags(Qt::Window);
-    //     this->showFullScreen();
-    // }
-
-    // if (event->key() == Qt::Key_Escape) {   // esc 退出全屏
-    //     this->setWindowFlags(Qt::SubWindow);
-    //     this->showNormal();
-    // }
-}
-
-
 void PageCenter::setCenterImage(cv::Mat img) {
     QImage qImg = QImage((const unsigned char*)(img.data), img.cols, 
                                 img.rows, img.step, QImage::Format_RGB888);

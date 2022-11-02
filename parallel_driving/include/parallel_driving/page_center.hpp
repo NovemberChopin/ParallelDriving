@@ -27,7 +27,6 @@ public:
 
     void decorateWidget();      // 修饰样式
 
-    void keyPressEvent(QKeyEvent *event);
 
 Q_SIGNALS:
 
