@@ -34,8 +34,8 @@ bool QNode::init(const std::string &master_url, const std::string &host_url) {
 	std::map<std::string,std::string> remappings;
 	remappings["__master"] = master_url;
 	remappings["__hostname"] = host_url;
-	// ros::init(remappings, "parallel_driving");
-	ros::init(init_argc, init_argv, "parallel_driving");
+	ros::init(remappings, "parallel_driving");
+	// ros::init(init_argc, init_argv, "parallel_driving");
 	
 	if ( ! ros::master::check() ) {
 		return false;
@@ -72,6 +72,11 @@ void QNode::sendCtrlCmd() {
 }
 
 
+/**
+ * @brief 订阅小车的速度控制反馈话题回调函数
+ * 
+ * @param msg 
+ */
 void QNode::ctrlCallback(const yhs_can_msgs::ctrl_fb& msg) {
 	// std::cout << "velocity fb is " << msg.ctrl_fb_velocity << " " << msg.ctrl_fb_steering << std::endl;
 	this->velo_fb_ = msg.ctrl_fb_velocity;

@@ -4,7 +4,7 @@
 JoyToCar::JoyToCar(/* args */) {
     
     this->velo_fb_ = 0.0;       // 初始化速度为0    
-    this->gear_ = 3;            // 默认为空挡
+    this->gear_ = 1;            // 默认为驻车档
     this->trun_lamp_ = 0;       // 转向灯，默认关闭；
     this->upper_beam_ = false;  // 远光灯，默认关闭；
 }
@@ -67,7 +67,7 @@ void JoyToCar::sendIOCmd() {
  *      03： 空挡N
  *      04： 前进D
  * ctrl_cmd_velocity： 速度范围0-5
- * ctrl_cmd_steering： 转向角范围（-25-25）度
+ * ctrl_cmd_steering： 转向角范围（25:-25）度
  * 
  * @param msg 
  */
@@ -76,31 +76,38 @@ void JoyToCar::joyCallback(const sensor_msgs::JoyConstPtr& msg) {
 
     if (velo_fb_ == 0 && msg->buttons[14] == 1) {    // 当速度为0时候切换前进档位
         this->gear_ = 4;
-        ROS_INFO("Forword");
+        ROS_INFO("Change gear to D");
     }
     if (this->gear_ == 4 && msg->buttons[14] == 0) {
         this->gear_ = 3;    // 改为空档
-        ROS_INFO("change to N");
+        ROS_INFO("Change gear to N");
     }
-    if (velo_fb_ == 0 && msg->buttons[15] == 1) {
+    if (velo_fb_ == 0 && msg->buttons[15] == 1) {   // buttons[15] 后退档位
         this->gear_ = 2;
-        ROS_INFO("Backword");
+        ROS_INFO("Change gear to R");
     }
     if (this->gear_ == 2 && msg->buttons[15] == 0) {
         this->gear_ = 3;
-        ROS_INFO("change to N");
+        ROS_INFO("Change gear to N");
     }
     
-    // 计算速度
+    // 计算速度 
     float f_vel = 2.5 * msg->axes[2] + 2.5;
     float b_vel = -(2.5 * msg->axes[3] + 2.5);
-    // ROS_INFO("%f |  %f", f_vel, b_vel);
+    if (msg->axes[2] == 0 || msg->axes[2] == -1) {
+        f_vel = 0;
+    }
+    // 第一次连接上方向盘，刹车的值 mas->axes[3] 为 0. 此时刹车速度也应该为 0
+    if (msg->axes[3] == 0 || msg->axes[3] == -1) {
+        b_vel = 0;
+    }
     velocity = f_vel + b_vel;
+    if (velocity > 5)   velocity = 5.0;
     if (velocity < 0)   velocity = 0.0;
 
     // 计算转向角
     steer = msg->axes[0] * 25.0;
-    if (steer > 0) {
+    if (steer > 0) {            // 自动开启转向灯
         this->trun_lamp_ = 1;
     } else if (steer < 0) {
         this->trun_lamp_ = 2;
@@ -124,8 +131,8 @@ void JoyToCar::joyCallback(const sensor_msgs::JoyConstPtr& msg) {
         io_msg_.io_cmd_enable = true;
         io_msg_.io_cmd_speaker = true;
     }
-    // 远光灯
-    if (msg->buttons[10] == 1) {        
+    
+    if (msg->buttons[10] == 1) {                    // 远光灯 R3 键   
         this->upper_beam_ = !this->upper_beam_;
     }
     if (this->upper_beam_) {

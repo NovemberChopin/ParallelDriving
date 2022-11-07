@@ -3,7 +3,7 @@
 ##############################################################################
 
 cmake_minimum_required(VERSION 2.8.0)
-project(ros_gui_pub)
+project(test_qt_ros)
 
 ## add
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -13,17 +13,21 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 ##############################################################################
 
 # qt_build provides the qt cmake glue, roscpp the comms for a default talker
-find_package(catkin REQUIRED COMPONENTS 
-    qt_build 
+find_package(catkin REQUIRED COMPONENTS
+    qt_build
     roscpp
-    message_generation
-    yhs_can_msgs
     std_msgs
-)
+    sensor_msgs
+    cv_bridge
+    image_transport
+    )
+find_package(OpenCV REQUIRED)
+
 include_directories(
-    include/ros_gui_pub
-    ${catkin_INCLUDE_DIRS} ros_gui_pub
-)
+    include
+    ${catkin_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS})
+
 
 ## add
 find_package(Qt5 REQUIRED Core Widgets)
@@ -40,7 +44,6 @@ catkin_package()
 
 # this comes from qt_build's qt-ros.cmake which is automatically 
 # included via the dependency call in package.xml
-## remove
 # rosbuild_prepare_qt4(QtCore QtGui) # Add the appropriate components to the component list here
 
 ##############################################################################
@@ -49,9 +52,8 @@ catkin_package()
 
 file(GLOB QT_FORMS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ui/*.ui)
 file(GLOB QT_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*.qrc)
-file(GLOB_RECURSE QT_MOC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/ros_gui_pub/*.hpp)
+file(GLOB_RECURSE QT_MOC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/test_qt_ros/*.hpp)
 
-## change 
 QT5_ADD_RESOURCES(QT_RESOURCES_CPP ${QT_RESOURCES})
 QT5_WRAP_UI(QT_FORMS_HPP ${QT_FORMS})
 QT5_WRAP_CPP(QT_MOC_HPP ${QT_MOC})
@@ -66,8 +68,7 @@ file(GLOB_RECURSE QT_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINK
 # Binaries
 ##############################################################################
 
-add_executable(ros_gui_pub ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP} ${QT_MOC_HPP})
-add_dependencies(ros_gui_pub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(ros_gui_pub ${QT_LIBRARIES} ${catkin_LIBRARIES})
-install(TARGETS ros_gui_pub RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+add_executable(test_qt_ros ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP} ${QT_MOC_HPP})
+target_link_libraries(test_qt_ros ${QT_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+install(TARGETS test_qt_ros RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 

@@ -113,35 +113,21 @@ void MainWindow::initWindow() {
 		this->cur_cam_index = 4;
 		this->p_Menu->exec(QCursor::pos());
 	});
-}
 
-void MainWindow::menu_pop_load_config() {
-	qDebug() << "cur_cam_index: " << cur_cam_index;
-	this->loadCameraMatrix(this->cur_cam_index);
-}
-
-
-void MainWindow::loadCameraMatrix(int cam_index) {
-	qDebug() << "menu_pop_load_config";
-    QString filename = QFileDialog::getOpenFileName(this, "Open", "./", "(*.yml)");
-    if (filename.isEmpty()) 
-        return;
-	cv::Mat cameraMatrix, distCoeffs;
-    cv::Mat map1, map2;
-	// 读取相机内参
-	cv::FileStorage cameraPameras(filename.toStdString(), cv::FileStorage::READ);
-    cameraPameras["camera_matrix"] >> cameraMatrix;
-    cameraPameras["dist_coeffs"] >> distCoeffs;
-    this->vec_cameraMatrix[cam_index] = cameraMatrix;
-    this->vec_distCoeffs[cam_index] = distCoeffs;
-	// 计算修复畸变的映射矩阵
-	cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, Mat(), cameraMatrix, image_size, CV_16SC2, map1, map2);
-    this->vec_map1[cam_index] = map1;
-    this->vec_map2[cam_index] = map2;
-	this->vec_hasLoadCameraMatrix[cam_index] = true;
+	// 显示页面
+	this->pageL->show();
+	this->pageC->show();
+	this->show();
 }
 
 
+/**
+ * @brief 接收 qnode 接收到的小车 速度信息 信号，并将其展示
+ * 
+ * @param gear 档位信息
+ * @param velo 速度
+ * @param steer	转向角 
+ */
 void MainWindow::slot_updateCtrlMsg(int gear, float velo, float steer) {
 	// qDebug() << gear << " " << velo << " " << steer;
 	// 更新速度信息
@@ -211,12 +197,11 @@ void MainWindow::handleVelocity() {
 
 	this->ctrl_msg_.ctrl_cmd_gear = gear;
 	this->ctrl_msg_.ctrl_cmd_velocity = velocity;
-	
 }
 
 
 void MainWindow::sendCtrlCmd() {
-    ros::Rate loop_rate(100);
+    ros::Rate loop_rate(100);		// 以100hz的频率发送话题
     
     ROS_INFO("start send ctrl message");
     while (ros::ok())
@@ -343,6 +328,33 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
 }
 
 
+void MainWindow::menu_pop_load_config() {
+	qDebug() << "cur_cam_index: " << cur_cam_index;
+	this->loadCameraMatrix(this->cur_cam_index);
+}
+
+
+void MainWindow::loadCameraMatrix(int cam_index) {
+	qDebug() << "menu_pop_load_config";
+    QString filename = QFileDialog::getOpenFileName(this, "Open", "./", "(*.yml)");
+    if (filename.isEmpty()) 
+        return;
+	cv::Mat cameraMatrix, distCoeffs;
+    cv::Mat map1, map2;
+	// 读取相机内参
+	cv::FileStorage cameraPameras(filename.toStdString(), cv::FileStorage::READ);
+    cameraPameras["camera_matrix"] >> cameraMatrix;
+    cameraPameras["dist_coeffs"] >> distCoeffs;
+    this->vec_cameraMatrix[cam_index] = cameraMatrix;
+    this->vec_distCoeffs[cam_index] = distCoeffs;
+	// 计算修复畸变的映射矩阵
+	cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, Mat(), cameraMatrix, image_size, CV_16SC2, map1, map2);
+    this->vec_map1[cam_index] = map1;
+    this->vec_map2[cam_index] = map2;
+	this->vec_hasLoadCameraMatrix[cam_index] = true;
+}
+
+
 void MainWindow::showNoMasterMessage() {
 	QMessageBox msgBox;
 	msgBox.setText("Couldn't find the ros master.");
@@ -354,11 +366,14 @@ void MainWindow::showNoMasterMessage() {
 void MainWindow::openConfigPanel() {
 	ROS_INFO("Open ROS config panel");
 	configP->show();
-	pageL->show();
-	pageC->show();
 }
 
 
+/**
+ * @brief 接收车辆配置页面返回信号
+ * 
+ * @param config 
+ */
 void MainWindow::connectByConfig(ConfigInfo *config) {
 	qDebug() << "--------- Config Info ---------";
     qDebug() << config->rosMasterUri;

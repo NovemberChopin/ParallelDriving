@@ -18,8 +18,8 @@ ConfigPanel::ConfigPanel(QWidget *parent) :
 
     QObject::connect(ui->ros_connect, &QPushButton::clicked, this, &ConfigPanel::ros_connect_clicked);
 
-    ui->rosMasterUri->setText("http://192.168.50.24:11311");
-    ui->localhost->setText("http://192.168.50.24");
+    ui->rosMasterUri->setText("http://192.168.50.23:11311");
+    ui->localhost->setText("http://192.168.50.23");
     ui->ros_topic_1->setText("/hik_cam_node/hik_camera");
     ui->ros_topic_2->setText("/hik_cam_node/hik_camera2");
     ui->ros_topic_3->setText("/hik_cam_node/hik_camera3");

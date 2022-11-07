@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
 
     QApplication app(argc, argv);
     parallel_driving::MainWindow w(argc,argv);
-    w.show();
+    // w.show();
 
     qRegisterMetaType<cv::Mat>("cv::Mat");
     app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
