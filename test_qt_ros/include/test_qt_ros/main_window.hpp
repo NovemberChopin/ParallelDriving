@@ -15,6 +15,7 @@
 #include <QMainWindow>
 #include "ui_main_window.h"
 #include "qnode.hpp"
+#include <QPushButton>
 
 /*****************************************************************************
 ** Namespace
@@ -48,6 +49,8 @@ public Q_SLOTS:
 	void on_actionAbout_triggered();
 	void on_button_connect_clicked(bool check );
 	void on_checkbox_use_environment_stateChanged(int state);
+
+	void testFun();		// 测试槽函数
 
     /******************************************
     ** Manual connections

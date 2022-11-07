@@ -386,7 +386,7 @@ void MainWindow::connectByConfig(ConfigInfo *config) {
         this->showNoMasterMessage();
     } else {
         // 连接成功
-        ui.btn_config->setEnabled(false);
+        // ui.btn_config->setEnabled(false);
 
 		boost::thread send_ctrl_thread(boost::bind(&MainWindow::sendCtrlCmd, this));
 		// boost::thread send_io_thread(boost::bind(&MainWindow::sendIOCmd, this));

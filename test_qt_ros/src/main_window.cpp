@@ -44,6 +44,8 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	ui.view_logging->setModel(qnode.loggingModel());
     QObject::connect(&qnode, SIGNAL(loggingUpdated()), this, SLOT(updateLoggingView()));
 
+	QObject::connect(ui.pushButton, &QPushButton::clicked, this, &MainWindow::testFun);
+
     /*********************
     ** Auto Start
     **********************/
@@ -53,6 +55,32 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 }
 
 MainWindow::~MainWindow() {}
+
+
+void MainWindow::testFun() {
+	std::cout << "getHost: " << ros::master::getHost() << std::endl;
+	std::cout << "getURI: " << ros::master::getURI() << std::endl;
+	std::cout << "getPort: " << ros::master::getPort() << std::endl;
+	// 查看节点是否在运行
+	ros::V_string node_if;
+	ros::master::getNodes(node_if);
+	auto it_if = std::find(node_if.begin(), node_if.end(), "/test_qt_ros");
+	if (it_if != node_if.end()) {
+		std::cout << "test_qt_ros is running" << std::endl;
+	} else {
+		std::cout << "test_qt_ros is not running" << std::endl;
+	}
+	// 查看节点话题
+	// ros::master::V_TopicInfo topic_info;
+	// ros::master::getTopics(topic_info);
+	// auto it_topic = std::find(topic_info.begin(), topic_info.end(), "/chatter");
+	// if (it_topic != topic_info.end()) {
+	// 	std::cout << "/chatter topic is running" << std::endl;
+	// } else {
+	// 	std::cout << "/chatter topic is not running" << std::endl;
+	// }
+}
+
 
 /*****************************************************************************
 ** Implementation [Slots]
