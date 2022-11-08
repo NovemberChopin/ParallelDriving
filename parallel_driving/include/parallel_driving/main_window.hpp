@@ -83,7 +83,11 @@ public Q_SLOTS:
 	/* 界面相关槽函数 */
 	void menu_pop_load_config();
 
+	void testNewFeatures();			// 测试槽函数
+
 private:
+	bool isShutdown = true;
+
 	Ui::MainWindowDesign ui;
 	QNode qnode;				// ROS节点相关
 	ConfigPanel *configP;		// ROS配置对话框

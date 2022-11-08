@@ -73,9 +73,22 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	QObject::connect(p_steer_timer, &QTimer::timeout, this, &MainWindow::handleSteer);
 
 	// this->setCentralWidget(this->init_main_page());
+	QObject::connect(ui.btn_test, &QPushButton::clicked, this, &MainWindow::testNewFeatures);
 }
 
 MainWindow::~MainWindow() {}
+
+
+void MainWindow::testNewFeatures() {
+	if (isShutdown) {
+		qnode.restoreTopic();
+		isShutdown = !isShutdown;
+	} else {
+		qnode.shutdownTopic();
+		isShutdown = !isShutdown;
+	}
+	std::cout << "isShutdown: " << isShutdown << std::endl;
+}
 
 
 void MainWindow::initWindow() {

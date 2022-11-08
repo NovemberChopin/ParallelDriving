@@ -18,10 +18,11 @@ public:
     explicit ConfigPanel(QWidget *parent = 0);
     ~ConfigPanel();
 
-    void ros_connect_clicked();
-
 Q_SIGNALS:
     void getConfigInfo(ConfigInfo *config);
+
+public Q_SLOTS:
+    void ros_connect_clicked();
 
 private:
 

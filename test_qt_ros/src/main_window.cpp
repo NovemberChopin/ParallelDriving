@@ -64,6 +64,13 @@ void MainWindow::testFun() {
 	// 查看节点是否在运行
 	ros::V_string node_if;
 	ros::master::getNodes(node_if);
+	// for (int i=0; i<node_if.size(); i++) {
+	// 	std::cout << node_if[i] << std::endl;
+	// }
+	std::cout << "---------" << std::endl;
+	for(auto node: node_if) {		// 推荐这种写法
+		std::cout << node << std::endl;
+	}
 	auto it_if = std::find(node_if.begin(), node_if.end(), "/test_qt_ros");
 	if (it_if != node_if.end()) {
 		std::cout << "test_qt_ros is running" << std::endl;

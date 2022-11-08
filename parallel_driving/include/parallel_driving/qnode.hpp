@@ -53,6 +53,8 @@ public:
 	
 	void sendCtrlCmd();
 
+	void shutdownTopic();		// 停止
+	void restoreTopic();		// 重新订阅
 
 Q_SIGNALS:
     void rosShutdown();
@@ -63,17 +65,26 @@ Q_SIGNALS:
 	void getImage_3(cv::Mat img);
 	void getImage_4(cv::Mat img);
 
+public Q_SLOTS:
+	void imgCallback_0(const sensor_msgs::ImageConstPtr &msg);
+	void imgCallback_1(const sensor_msgs::ImageConstPtr &msg);
+	void imgCallback_2(const sensor_msgs::ImageConstPtr &msg);
+	void imgCallback_3(const sensor_msgs::ImageConstPtr &msg);
+	void imgCallback_4(const sensor_msgs::ImageConstPtr &msg);
+
+
 private:
 	int init_argc;
 	char** init_argv;
 	
 	ConfigInfo *configInfo;
 
+	image_transport::Subscriber image_sub0;
 	image_transport::Subscriber image_sub1;
 	image_transport::Subscriber image_sub2;
 	image_transport::Subscriber image_sub3;
 	image_transport::Subscriber image_sub4;
-	image_transport::Subscriber image_sub5;
+	
 
 	yhs_can_msgs::ctrl_cmd ctrl_msg_;
 
