@@ -123,7 +123,7 @@ void MainWindow::getTopic_slot(const QString &node) {
 		}
 		// 这里手动添加图片话题
 		for (int i=0; i<5; i++) {
-			configP->addChekoBox("/hik2/hik_cam_node/hik_camera2");
+			configP->addChekoBox("/hik1/hik_cam_node/hik_camera1");
 		}
 	} else {
 		qDebug() << "service request failed !";
