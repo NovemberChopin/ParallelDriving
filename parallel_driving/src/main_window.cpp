@@ -114,13 +114,16 @@ void MainWindow::getTopic_slot(const QString &node) {
 	// 3. 获取该节点发布的话题
 	yhs_can_control::GetTopics srv;
 	if (qnode.topic_client.call(srv)) {
-		// std::cout << "---- response ----" << std::endl;;
-		// std::cout << "nodeName: " << srv.response.nodeName << std::endl;
-		for (auto temp: srv.response.topics.dim) {
+		// std::cout << "----- respone ----\n";
+		for (auto temp: srv.response.pub_topics.dim) {
 			// std::cout << temp.label << std::endl;
 			// 把信息展示到页面上
 			configP->addChekoBox(temp.label);
 		}
+		// for (auto temp: srv.response.sub_topics.dim) {
+		// 	std::cout << temp.label << std::endl;
+		// }
+
 		// 这里手动添加图片话题
 		for (int i=0; i<5; i++) {
 			configP->addChekoBox("/hik1/hik_cam_node/hik_camera1");

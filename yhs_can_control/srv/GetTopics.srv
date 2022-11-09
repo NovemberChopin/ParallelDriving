@@ -1,3 +1,4 @@
 ---
-std_msgs/MultiArrayLayout topics
 string nodeName
+std_msgs/MultiArrayLayout pub_topics
+std_msgs/MultiArrayLayout sub_topics

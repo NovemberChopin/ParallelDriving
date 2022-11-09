@@ -434,18 +434,28 @@ void CanControl::sendData()
 
 bool getTopicsCall(yhs_can_control::GetTopics::Request &req,
 				   yhs_can_control::GetTopics::Response &res) {
-	// 获取当前发布的话题
 	ros::V_string topics;
-	ros::this_node::getAdvertisedTopics(topics);
-	// res.nodeName = ros::names::resolve("yhs_can_control");
 	res.nodeName = ros::this_node::getName();
 	std::cout << "---- server ----" << std::endl;
 	std::cout << "nodeName: " << res.nodeName << std::endl;
+	// 获取当前发布的话题
+	std::cout << "pub topic: " << std::endl;
+	ros::this_node::getAdvertisedTopics(topics);
 	for (int i=0; i<topics.size(); i++) {
 		std::cout << topics[i] << std::endl;
 		std_msgs::MultiArrayDimension dim;
 		dim.label = topics[i];
-		res.topics.dim.push_back(dim);
+		res.pub_topics.dim.push_back(dim);
+	}
+	// 获取当前订阅的话题
+	topics.clear();
+	std::cout << "sub topic: " << std::endl;
+	ros::this_node::getSubscribedTopics(topics);
+	for (auto item: topics) {
+		std::cout << item << std::endl;
+		std_msgs::MultiArrayDimension dim;
+		dim.label = item;
+		res.sub_topics.dim.push_back(dim);
 	}
 	return true;		
 }

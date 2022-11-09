@@ -11,11 +11,19 @@
 #include <QListWidgetItem>
 #include <QVBoxLayout>
 #include <QMessageBox>
+#include <QDebug>
 
 #include "./qnode.hpp"
 #include "ui_config_panel.h"
 
 namespace parallel_driving {
+
+
+struct NodeInfo {
+    std::string nodeName;
+    ros::V_string topics;
+};
+
 
 class ConfigPanel : public QWidget
 {
@@ -29,6 +37,8 @@ public:
                         std::vector<std::string>& res);
 
     void addChekoBox(std::string topicName);
+
+    
 
 Q_SIGNALS:
     void getConfigInfo(ConfigInfo *config);
@@ -48,6 +58,8 @@ public Q_SLOTS:
 private:
 
     void initWindow();
+
+    // std::vector<NodeInfo*> *allNodeInfo;    // 保存所有节点的信息
 
     Ui::ConfigPanel* ui;
 

@@ -155,6 +155,9 @@ void ConfigPanel::refresh_node() {
     ui->comboBox->clear();
     this->rosNodes.clear();
     ros::master::getNodes(this->rosNodes);
+    for (auto item: this->rosNodes) {
+        std::cout << item << std::endl;
+    }
     std::vector<std::string> strList;
     int car_num = 0;
     for (auto node: this->rosNodes) {
@@ -169,11 +172,11 @@ void ConfigPanel::refresh_node() {
         QMessageBox::information(this, "提示", "检查小车节点是否启动！");
     }
     // 获取所有节点发布的消息
-    ros::master::V_TopicInfo topic_infos;
-    ros::master::getTopics(topic_infos);
-    for (auto item: topic_infos) {
-        std::cout << item.name << " " << item.datatype << std::endl;
-    }
+    // ros::master::V_TopicInfo topics_info;
+    // ros::master::getTopics(this->topics_info);
+    // for (auto item: this->topics_info) {
+    //     std::cout << item.name << " " << item.datatype << std::endl;
+    // }
 }
 
 
