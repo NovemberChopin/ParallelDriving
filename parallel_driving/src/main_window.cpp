@@ -4,7 +4,6 @@
 #include <iostream>
 #include "../include/parallel_driving/main_window.hpp"
 
-
 namespace parallel_driving {
 
 using namespace Qt;
@@ -67,7 +66,9 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	QObject::connect(ui.btn_config, &QPushButton::clicked, this, &MainWindow::openConfigPanel);
 	// 登录页面的信号
 	QObject::connect(configP, SIGNAL(getConfigInfo(ConfigInfo*)), this, SLOT(connectByConfig(ConfigInfo*)));
-
+	QObject::connect(configP, SIGNAL(getTopic_signal(QString)), this, SLOT(getTopic_slot(QString)));
+	QObject::connect(configP, SIGNAL(getSelectedImg_signal(QStringList*)), 
+						this, SLOT(getSelectedImg_slot(QStringList*)));
 	// 计时器超时信号
 	QObject::connect(p_velo_timer, &QTimer::timeout, this, &MainWindow::handleVelocity);
 	QObject::connect(p_steer_timer, &QTimer::timeout, this, &MainWindow::handleSteer);
@@ -78,10 +79,62 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 
 MainWindow::~MainWindow() {}
 
+/**
+ * @brief 获取用户选择的话题，槽函数
+ * 	传递给 qnode 并启动相应的 发布订阅程序
+ * @param topics 
+ */
+void MainWindow::getSelectedImg_slot(QStringList *topics) {
+	qDebug() << "--- getSelectedTopic_slot ---";
+	this->qnode.setImageTopic(topics);
+	this->qnode.shutdownTopic();	// 关闭现有的订阅话题
+	// 启动 发布/订阅 话题
+	qDebug() << "启动话题 ";
+	std::cout << this->prefix << std::endl;
+	this->qnode.restoreTopic(this->prefix+'_');
+}
+
+
+/**
+ * @brief 执行 get_topic 服务获取 nodeName 发布的话题，然后展示在 ConfigPanel 页面中
+ * 
+ * @param node 选择的节点名称
+ */
+void MainWindow::getTopic_slot(const QString &node) {
+	// 1. 获取 prefix
+	std::vector<std::string> strList;
+	std::vector<std::string>::iterator it;
+	configP->stringSplit(node.toStdString(), '_', strList);
+	it = strList.end()-1;
+	this->prefix = *it;
+	std::cout << "the prefix is: " << this->prefix << std::endl;
+	// 2. 启动 服务客户端，获取话题列表
+	qnode.restoreService(this->prefix+'_');
+	std::cout << prefix << " client is start!" << std::endl;	// 默认启动成功
+	// 3. 获取该节点发布的话题
+	yhs_can_control::GetTopics srv;
+	if (qnode.topic_client.call(srv)) {
+		// std::cout << "---- response ----" << std::endl;;
+		// std::cout << "nodeName: " << srv.response.nodeName << std::endl;
+		for (auto temp: srv.response.topics.dim) {
+			// std::cout << temp.label << std::endl;
+			// 把信息展示到页面上
+			configP->addChekoBox(temp.label);
+		}
+		// 这里手动添加图片话题
+		for (int i=0; i<5; i++) {
+			configP->addChekoBox("/hik2/hik_cam_node/hik_camera2");
+		}
+	} else {
+		qDebug() << "service request failed !";
+		QMessageBox::information(this, "连接失败", "请检查小车是否启动！");
+	}
+}
+
 
 void MainWindow::testNewFeatures() {
 	if (isShutdown) {
-		qnode.restoreTopic();
+		qnode.restoreTopic("car0_");
 		isShutdown = !isShutdown;
 	} else {
 		qnode.shutdownTopic();
@@ -368,14 +421,6 @@ void MainWindow::loadCameraMatrix(int cam_index) {
 }
 
 
-void MainWindow::showNoMasterMessage() {
-	QMessageBox msgBox;
-	msgBox.setText("Couldn't find the ros master.");
-	msgBox.exec();
-	this->close();
-}
-
-
 void MainWindow::openConfigPanel() {
 	ROS_INFO("Open ROS config panel");
 	configP->show();
@@ -391,16 +436,19 @@ void MainWindow::connectByConfig(ConfigInfo *config) {
 	qDebug() << "--------- Config Info ---------";
     qDebug() << config->rosMasterUri;
     qDebug() << config->localhost;
-	qDebug() << config->imageTopics[0];
+	// qDebug() << config->imageTopics[0];
 	this->qnode.setConfigInfo(config);
     if (!qnode.init(config->rosMasterUri.toStdString(), 
 					config->localhost.toStdString())) {
         // 连接失败
-        this->showNoMasterMessage();
+		QMessageBox errBox;
+		errBox.setText("主节点启动失败，请检查节点地址！");
+		errBox.exec();
     } else {
         // 连接成功
-        // ui.btn_config->setEnabled(false);
-
+        QMessageBox infoBox;
+		infoBox.setText("主节点启动成功！");
+		infoBox.exec();
 		boost::thread send_ctrl_thread(boost::bind(&MainWindow::sendCtrlCmd, this));
 		// boost::thread send_io_thread(boost::bind(&MainWindow::sendIOCmd, this));
     }

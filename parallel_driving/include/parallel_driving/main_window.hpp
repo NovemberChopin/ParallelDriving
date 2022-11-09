@@ -16,12 +16,14 @@
 #include <QMenu>
 #include <QAction>
 #include <QFileDialog>
+#include <QStringList>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/core.hpp>
 
+#include "yhs_can_control/GetTopics.h"
 #include "yhs_can_msgs/io_cmd.h"
 #include "yhs_can_msgs/ctrl_cmd.h"
 
@@ -49,8 +51,6 @@ public:
 	void initWindow();		// 初始化界面相关
 
 	void closeEvent(QCloseEvent *event); // Overloaded function
-	void showNoMasterMessage();
-
 
 	void keyPressEvent(QKeyEvent *event);
 	void keyReleaseEvent(QKeyEvent *event);		// 键盘事件
@@ -83,10 +83,13 @@ public Q_SLOTS:
 	/* 界面相关槽函数 */
 	void menu_pop_load_config();
 
+	void getTopic_slot(const QString &node);
+	void getSelectedImg_slot(QStringList *topics);
 	void testNewFeatures();			// 测试槽函数
 
 private:
 	bool isShutdown = true;
+	std::string prefix = "";
 
 	Ui::MainWindowDesign ui;
 	QNode qnode;				// ROS节点相关

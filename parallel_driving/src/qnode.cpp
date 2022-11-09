@@ -35,13 +35,12 @@ bool QNode::init(const std::string &master_url, const std::string &host_url) {
 	remappings["__master"] = master_url;
 	remappings["__hostname"] = host_url;
 	ros::init(remappings, "parallel_driving");
-	// ros::init(init_argc, init_argv, "parallel_driving");
 	
 	if (!ros::master::check() ) {
 		return false;
 	}
 	ros::start(); // explicitly needed since our nodehandle is going out of scope.
-	// this->restoreTopic();	// 构造 Subscriber 和 Publisher
+
 	this->start();				// 启动线程
 	return true;
 }
@@ -50,30 +49,35 @@ bool QNode::init(const std::string &master_url, const std::string &host_url) {
 void QNode::shutdownTopic() {
 	this->pub_ctrl_cmd.shutdown();
 	this->pub_io_cmd.shutdown();
+	this->sub_ctrl_fb.shutdown();
 
 	this->image_sub0.shutdown();
 	this->image_sub1.shutdown();
 	this->image_sub2.shutdown();
 	this->image_sub3.shutdown();
 	this->image_sub4.shutdown();
-	this->sub_ctrl_fb.shutdown();
 	std::cout << "all topic is shutdown on master node" << std::endl;
 }
 
 
-void QNode::restoreTopic() {
+void QNode::restoreTopic(std::string prefix) {
 	ros::NodeHandle node;
 	image_transport::ImageTransport it(node);
-	this->pub_ctrl_cmd = node.advertise<yhs_can_msgs::ctrl_cmd>("/ctrl_cmd", 5);
-	this->pub_io_cmd = node.advertise<yhs_can_msgs::io_cmd>("/io_cmd", 5);
-
+	this->pub_ctrl_cmd = node.advertise<yhs_can_msgs::ctrl_cmd>(prefix+"ctrl_cmd", 5);
+	this->pub_io_cmd = node.advertise<yhs_can_msgs::io_cmd>(prefix+"io_cmd", 5);
+	this->sub_ctrl_fb = node.subscribe(prefix+"ctrl_fb", 5, &QNode::ctrlCallback, this);
+	std::cout << "--------------------" << std::endl;
+	for (auto item: configInfo->imageTopics) {
+		std::cout << item.toStdString() << std::endl;
+	}
 	image_sub0 = it.subscribe(configInfo->imageTopics[0].toStdString(), 1, &QNode::imgCallback_0, this);
 	image_sub1 = it.subscribe(configInfo->imageTopics[1].toStdString(), 1, &QNode::imgCallback_1, this);
 	image_sub2 = it.subscribe(configInfo->imageTopics[2].toStdString(), 1, &QNode::imgCallback_2, this);
 	image_sub3 = it.subscribe(configInfo->imageTopics[3].toStdString(), 1, &QNode::imgCallback_3, this);
 	image_sub4 = it.subscribe(configInfo->imageTopics[4].toStdString(), 1, &QNode::imgCallback_4, this);
-	this->sub_ctrl_fb = node.subscribe("ctrl_fb", 5, &QNode::ctrlCallback, this);
+	
 	std::cout << "all topic is reback on master node" << std::endl;
+	// 获取当前节点订阅的话题名称
 	ros::V_string topics;
 	ros::this_node::getAdvertisedTopics(topics);
 	for (auto t: topics) {
@@ -82,25 +86,27 @@ void QNode::restoreTopic() {
 }
 
 
+void QNode::shutdownService() {
+	this->topic_client.shutdown();
+}
+
+
+void QNode::restoreService(std::string prefix) {
+	ros::NodeHandle node;
+	this->topic_client = node.serviceClient<yhs_can_control::GetTopics>(prefix+"get_topics");
+}
+
+
 void QNode::setConfigInfo(ConfigInfo *config) {
 	qDebug() << "set config info";
 	this->configInfo = config;
 }
 
-
-
-void QNode::sendCtrlCmd() {
-	ros::Rate loop_rate(10);
-
-    while (ros::ok())
-    {	
-		ROS_INFO("start send ctrl message: %d", ctrl_msg_.ctrl_cmd_gear);
-        pub_ctrl_cmd.publish(this->ctrl_msg_);
-
-        ros::spinOnce();
-
-        loop_rate.sleep();
-    }
+void QNode::setImageTopic(QStringList *list) {
+	for (int i=0; i<list->size(); i++) {
+		this->configInfo->imageTopics.push_back(list->at(i));
+	}
+	// qDebug() << this->configInfo->imageTopics;
 }
 
 
@@ -124,7 +130,6 @@ void QNode::run() {
 
 	ros::spin();
 	
-	// boost::thread ctrl_thread(boost::bind(&QNode::sendCtrlCmd, this));
 	
 	// std::string topic;
 	// ros::NodeHandle n_a;

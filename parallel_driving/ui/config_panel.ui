@@ -53,7 +53,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,3">
          <item>
           <widget class="QWidget" name="left" native="true">
            <property name="sizePolicy">
@@ -170,12 +170,18 @@
          </item>
          <item>
           <widget class="QWidget" name="right" native="true">
-           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,2,1">
+           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,0">
             <item>
              <widget class="QWidget" name="widget_3" native="true">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <layout class="QHBoxLayout" name="horizontalLayout_4">
                <property name="spacing">
-                <number>0</number>
+                <number>6</number>
                </property>
                <property name="leftMargin">
                 <number>0</number>
@@ -193,6 +199,13 @@
                 <widget class="QPushButton" name="btn_refresh">
                  <property name="text">
                   <string>刷新节点</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btn_confirm">
+                 <property name="text">
+                  <string>确认</string>
                  </property>
                 </widget>
                </item>

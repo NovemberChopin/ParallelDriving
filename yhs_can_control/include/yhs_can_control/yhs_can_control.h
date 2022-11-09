@@ -22,6 +22,7 @@
 #include "yhs_can_msgs/Drive_MCUEcoder_fb.h"
 #include "yhs_can_msgs/Veh_Diag_fb.h"
 
+#include "yhs_can_control/GetTopics.h"
 #include "controlcan.h"
 
 
@@ -33,6 +34,7 @@ public:
 	~CanControl();
 	
 	void run();
+
 private:
 	ros::NodeHandle nh_;
 
@@ -48,6 +50,8 @@ private:
 
 	ros::Subscriber ctrl_cmd_sub_;
 	ros::Subscriber io_cmd_sub_;
+
+	ros::ServiceServer topic_service;
 
 	boost::mutex cmd_mutex_io_;
 
@@ -66,10 +70,12 @@ private:
 
 	void io_cmdCallBack(const yhs_can_msgs::io_cmd msg);
 	void ctrl_cmdCallBack(const yhs_can_msgs::ctrl_cmd msg);
-
+	
 
 	void recvData();
 	void sendData();
+
+	std::string prefix = "car0_";
 
 };
 

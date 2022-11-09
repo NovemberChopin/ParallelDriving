@@ -12,6 +12,7 @@
 #include "yhs_can_msgs/io_cmd.h"
 #include "yhs_can_msgs/ctrl_cmd.h"
 #include "yhs_can_msgs/ctrl_fb.h"
+#include "yhs_can_control/GetTopics.h"
 
 #include <QThread>
 #include <QDebug>
@@ -47,14 +48,15 @@ public:
 	void run();
 
 	void setConfigInfo(ConfigInfo *config);
+	void setImageTopic(QStringList *list);
 	void ImgCallback(const sensor_msgs::ImageConstPtr &msg, int cam_index);
 	void ctrlCallback(const yhs_can_msgs::ctrl_fb& msg);
-	
-	
-	void sendCtrlCmd();
 
-	void shutdownTopic();		// 停止
-	void restoreTopic();		// 重新订阅
+	void shutdownTopic();						// 停止订阅/发布话题
+	void restoreTopic(std::string prefix);		// 重新订阅/发布话题
+
+	void shutdownService();						// 停止服务/客户端
+	void restoreService(std::string prefix);	// 恢复服务/客户端
 
 Q_SIGNALS:
     void rosShutdown();
@@ -94,6 +96,7 @@ signals:
 	void updateCtrlMsg(int gear, float velo, float steer);
 
 public:
+	ros::ServiceClient topic_client;
 	ros::Publisher pub_ctrl_cmd;
 	ros::Publisher pub_io_cmd;
 	float velo_fb_ = 0;
