@@ -35,7 +35,6 @@ bool QNode::init(const std::string &master_url, const std::string &host_url) {
 	remappings["__master"] = master_url;
 	remappings["__hostname"] = host_url;
 	ros::init(remappings, "parallel_driving");
-	
 	if (!ros::master::check() ) {
 		return false;
 	}

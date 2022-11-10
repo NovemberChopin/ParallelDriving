@@ -50,7 +50,6 @@ Q_SIGNALS:
 public Q_SLOTS:
     void ros_connect_clicked();
     void refresh_node();
-    void closeConfigPanel();
     void activated_slot(const QString & text);
     
     void getSelectedCheckItems();

@@ -89,10 +89,12 @@ void MainWindow::getSelectedImg_slot(QStringList *topics, std::string prefix) {
 	}
 	qDebug() << "--- getSelectedTopic_slot ---";
 	this->qnode.setImageTopic(topics);
+	this->stopThread();
 	this->qnode.shutdownTopic();	// 关闭现有的订阅话题
 	// 启动 发布/订阅 话题
 	std::cout << "启动话题: " << prefix << std::endl;
 	this->qnode.restoreTopic(prefix+'/');
+	this->startThread();		// 启动发送话题线程
 }
 
 
@@ -220,7 +222,7 @@ void MainWindow::handleVelocity() {
 
 
 void MainWindow::sendCtrlCmd() {
-    ros::Rate loop_rate(1);		// 以100hz的频率发送话题
+    ros::Rate loop_rate(100);		// 以100hz的频率发送话题
     
     ROS_INFO("start send ctrl message");
     while (ros::ok())
@@ -402,11 +404,24 @@ void MainWindow::connectByConfig(ConfigInfo *config) {
         QMessageBox infoBox;
 		infoBox.setText("主节点启动成功！");
 		infoBox.exec();
-		boost::thread send_ctrl_thread(boost::bind(&MainWindow::sendCtrlCmd, this));
+		// boost::thread send_ctrl_thread(boost::bind(&MainWindow::sendCtrlCmd, this));
 		// boost::thread send_io_thread(boost::bind(&MainWindow::sendIOCmd, this));
     }
 }
 
+
+void MainWindow::startThread() {
+	std::cout << "启动线程" << std::endl;
+	this->pub_thread.reset(new boost::thread(boost::bind(&MainWindow::sendCtrlCmd, this)));
+}
+
+
+void MainWindow::stopThread() {
+	std::cout << "关闭线程" << std::endl;
+	if (this->pub_thread) {
+		this->pub_thread->interrupt();
+	}
+}
 
 
 // 重写绘图事件

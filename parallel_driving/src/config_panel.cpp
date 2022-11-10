@@ -19,7 +19,6 @@ ConfigPanel::ConfigPanel(QWidget *parent) :
 
     QObject::connect(ui->btn_connect, &QPushButton::clicked, this, &ConfigPanel::ros_connect_clicked);
     QObject::connect(ui->btn_refresh, &QPushButton::clicked, this, &ConfigPanel::refresh_node);
-    QObject::connect(ui->btn_return, &QPushButton::clicked, this, &ConfigPanel::closeConfigPanel);
     QObject::connect(ui->btn_confirm, &QPushButton::clicked, this, &ConfigPanel::getSelectedCheckItems);
     QObject::connect(ui->comboBox, SIGNAL(activated(const QString)), 
                     this, SLOT(activated_slot(const QString)));
@@ -247,11 +246,6 @@ void ConfigPanel::refresh_node() {
     if (car_num == 0) {
         QMessageBox::information(this, "提示", "检查小车节点是否启动！");
     }
-}
-
-
-void ConfigPanel::closeConfigPanel() {
-    this->close();
 }
 
 

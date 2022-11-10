@@ -55,6 +55,8 @@ public:
 	void keyPressEvent(QKeyEvent *event);
 	void keyReleaseEvent(QKeyEvent *event);		// 键盘事件
 
+	void startThread();
+	void stopThread();
 
 	void sendCtrlCmd();		// 播放ctrl_cmd话题的线程
 	// void sendIOCmd();
@@ -86,6 +88,7 @@ public Q_SLOTS:
 	void getSelectedImg_slot(QStringList *topics, std::string prefix);
 
 private:
+	boost::shared_ptr<boost::thread> pub_thread;
 
 	Ui::MainWindowDesign ui;
 	QNode qnode;				// ROS节点相关
