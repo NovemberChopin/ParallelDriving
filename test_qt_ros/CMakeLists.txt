@@ -68,7 +68,7 @@ file(GLOB_RECURSE QT_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINK
 # Binaries
 ##############################################################################
 
-add_executable(test_qt_ros ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP} ${QT_MOC_HPP})
-target_link_libraries(test_qt_ros ${QT_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-install(TARGETS test_qt_ros RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+add_executable(yhs_test_qt_ros ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP} ${QT_MOC_HPP})
+target_link_libraries(yhs_test_qt_ros ${QT_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+install(TARGETS yhs_test_qt_ros RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 

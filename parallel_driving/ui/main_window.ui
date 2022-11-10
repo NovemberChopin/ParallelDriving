@@ -95,13 +95,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btn_test">
-            <property name="text">
-             <string>测试</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="btn_close">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">

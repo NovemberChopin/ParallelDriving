@@ -464,21 +464,21 @@ bool getTopicsCall(yhs_can_control::GetTopics::Request &req,
 void CanControl::run()
 {
 
-	ctrl_cmd_sub_ = nh_.subscribe<yhs_can_msgs::ctrl_cmd>(prefix+"ctrl_cmd", 5, &CanControl::ctrl_cmdCallBack, this);
-	io_cmd_sub_ = nh_.subscribe<yhs_can_msgs::io_cmd>(prefix+"io_cmd", 5, &CanControl::io_cmdCallBack, this);
+	ctrl_cmd_sub_ = nh_.subscribe<yhs_can_msgs::ctrl_cmd>("ctrl_cmd", 5, &CanControl::ctrl_cmdCallBack, this);
+	io_cmd_sub_ = nh_.subscribe<yhs_can_msgs::io_cmd>("io_cmd", 5, &CanControl::io_cmdCallBack, this);
 
-	ctrl_fb_pub_ = nh_.advertise<yhs_can_msgs::ctrl_fb>(prefix+"ctrl_fb",5);
-	lr_wheel_fb_pub_ = nh_.advertise<yhs_can_msgs::lr_wheel_fb>(prefix+"lr_wheel_fb",5);
-	rr_wheel_fb_pub_ = nh_.advertise<yhs_can_msgs::rr_wheel_fb>(prefix+"rr_wheel_fb",5);
-	io_fb_pub_ = nh_.advertise<yhs_can_msgs::io_fb>(prefix+"io_fb",5);
-	odo_fb_pub_ = nh_.advertise<yhs_can_msgs::odo_fb>(prefix+"odo_fb",5);
-	bms_Infor_fb_pub_ = nh_.advertise<yhs_can_msgs::bms_Infor_fb>(prefix+"bms_Infor_fb",5);
-	bms_flag_Infor_fb_pub_ = nh_.advertise<yhs_can_msgs::bms_flag_Infor_fb>(prefix+"bms_flag_Infor_fb",5);
-	Drive_MCUEcoder_fb_pub_ = nh_.advertise<yhs_can_msgs::Drive_MCUEcoder_fb>(prefix+"Drive_MCUEcoder_fb",5);
-	Veh_Diag_fb_pub_ = nh_.advertise<yhs_can_msgs::Veh_Diag_fb>(prefix+"Veh_Diag_fb",5);
+	ctrl_fb_pub_ = nh_.advertise<yhs_can_msgs::ctrl_fb>("ctrl_fb",5);
+	lr_wheel_fb_pub_ = nh_.advertise<yhs_can_msgs::lr_wheel_fb>("lr_wheel_fb",5);
+	rr_wheel_fb_pub_ = nh_.advertise<yhs_can_msgs::rr_wheel_fb>("rr_wheel_fb",5);
+	io_fb_pub_ = nh_.advertise<yhs_can_msgs::io_fb>("io_fb",5);
+	odo_fb_pub_ = nh_.advertise<yhs_can_msgs::odo_fb>("odo_fb",5);
+	bms_Infor_fb_pub_ = nh_.advertise<yhs_can_msgs::bms_Infor_fb>("bms_Infor_fb",5);
+	bms_flag_Infor_fb_pub_ = nh_.advertise<yhs_can_msgs::bms_flag_Infor_fb>("bms_flag_Infor_fb",5);
+	Drive_MCUEcoder_fb_pub_ = nh_.advertise<yhs_can_msgs::Drive_MCUEcoder_fb>("Drive_MCUEcoder_fb",5);
+	Veh_Diag_fb_pub_ = nh_.advertise<yhs_can_msgs::Veh_Diag_fb>("Veh_Diag_fb",5);
 
 	// service
-	topic_service = nh_.advertiseService(prefix+"get_topics", getTopicsCall);
+	topic_service = nh_.advertiseService("get_topics", getTopicsCall);
 
 	//打开设备
 	if(VCI_OpenDevice(VCI_USBCAN2,0,0)==1)
@@ -553,7 +553,7 @@ void CanControl::run()
 //主函数
 int main(int argc, char ** argv)
 {
-	ros::init(argc, argv, "car0_yhs_can_control_node");
+	ros::init(argc, argv, "yhs_can_control_node");
 
 	yhs_tool::CanControl cancontrol;
 	cancontrol.run();

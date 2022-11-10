@@ -66,84 +66,33 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	QObject::connect(ui.btn_config, &QPushButton::clicked, this, &MainWindow::openConfigPanel);
 	// 登录页面的信号
 	QObject::connect(configP, SIGNAL(getConfigInfo(ConfigInfo*)), this, SLOT(connectByConfig(ConfigInfo*)));
-	QObject::connect(configP, SIGNAL(getTopic_signal(QString)), this, SLOT(getTopic_slot(QString)));
-	QObject::connect(configP, SIGNAL(getSelectedImg_signal(QStringList*)), 
-						this, SLOT(getSelectedImg_slot(QStringList*)));
+	QObject::connect(configP, SIGNAL(getSelectedImg_signal(QStringList*, std::string)), 
+						this, SLOT(getSelectedImg_slot(QStringList*, std::string)));
 	// 计时器超时信号
 	QObject::connect(p_velo_timer, &QTimer::timeout, this, &MainWindow::handleVelocity);
 	QObject::connect(p_steer_timer, &QTimer::timeout, this, &MainWindow::handleSteer);
 
 	// this->setCentralWidget(this->init_main_page());
-	QObject::connect(ui.btn_test, &QPushButton::clicked, this, &MainWindow::testNewFeatures);
 }
 
 MainWindow::~MainWindow() {}
 
 /**
- * @brief 获取用户选择的话题，槽函数
- * 	传递给 qnode 并启动相应的 发布订阅程序
+ * @brief 传递给 qnode 并启动相应的 发布订阅程序
+ * 	
  * @param topics 
  */
-void MainWindow::getSelectedImg_slot(QStringList *topics) {
+void MainWindow::getSelectedImg_slot(QStringList *topics, std::string prefix) {
+	if (topics->size() != 5) {
+		QMessageBox::information(this, "错误", "话题不足五个!");
+		return;
+	}
 	qDebug() << "--- getSelectedTopic_slot ---";
 	this->qnode.setImageTopic(topics);
 	this->qnode.shutdownTopic();	// 关闭现有的订阅话题
 	// 启动 发布/订阅 话题
-	qDebug() << "启动话题 ";
-	std::cout << this->prefix << std::endl;
-	this->qnode.restoreTopic(this->prefix+'_');
-}
-
-
-/**
- * @brief 执行 get_topic 服务获取 nodeName 发布的话题，然后展示在 ConfigPanel 页面中
- * 
- * @param node 选择的节点名称
- */
-void MainWindow::getTopic_slot(const QString &node) {
-	// 1. 获取 prefix
-	std::vector<std::string> strList;
-	std::vector<std::string>::iterator it;
-	configP->stringSplit(node.toStdString(), '_', strList);
-	it = strList.end()-1;
-	this->prefix = *it;
-	std::cout << "the prefix is: " << this->prefix << std::endl;
-	// 2. 启动 服务客户端，获取话题列表
-	qnode.restoreService(this->prefix+'_');
-	std::cout << prefix << " client is start!" << std::endl;	// 默认启动成功
-	// 3. 获取该节点发布的话题
-	yhs_can_control::GetTopics srv;
-	if (qnode.topic_client.call(srv)) {
-		// std::cout << "----- respone ----\n";
-		for (auto temp: srv.response.pub_topics.dim) {
-			// std::cout << temp.label << std::endl;
-			// 把信息展示到页面上
-			configP->addChekoBox(temp.label);
-		}
-		// for (auto temp: srv.response.sub_topics.dim) {
-		// 	std::cout << temp.label << std::endl;
-		// }
-
-		// 这里手动添加图片话题
-		for (int i=0; i<5; i++) {
-			configP->addChekoBox("/hik1/hik_cam_node/hik_camera1");
-		}
-	} else {
-		qDebug() << "service request failed !";
-		QMessageBox::information(this, "连接失败", "请检查小车是否启动！");
-	}
-}
-
-
-void MainWindow::testNewFeatures() {
-	if (isShutdown) {
-		qnode.restoreTopic("car0_");
-		isShutdown = !isShutdown;
-	} else {
-		qnode.shutdownTopic();
-		isShutdown = !isShutdown;
-	}
-	std::cout << "isShutdown: " << isShutdown << std::endl;
+	std::cout << "启动话题: " << prefix << std::endl;
+	this->qnode.restoreTopic(prefix+'/');
 }
 
 
@@ -269,12 +218,13 @@ void MainWindow::handleVelocity() {
 }
 
 
+
 void MainWindow::sendCtrlCmd() {
-    ros::Rate loop_rate(100);		// 以100hz的频率发送话题
+    ros::Rate loop_rate(1);		// 以100hz的频率发送话题
     
     ROS_INFO("start send ctrl message");
     while (ros::ok())
-    {
+    {	
         this->qnode.pub_ctrl_cmd.publish(this->ctrl_msg_);
 
         ros::spinOnce();

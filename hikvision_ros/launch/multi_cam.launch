@@ -2,7 +2,6 @@
     <group ns="car0">
         <arg name="ip_addr_1" default="192.168.50.64"/>
         <arg name="ip_addr_2" default="192.168.50.66"/>
-        <arg name="ip_addr_3" default="192.168.50.67"/>
 
         <arg name="user_name" default="admin"/>
         <arg name="password" default="js123456"/>

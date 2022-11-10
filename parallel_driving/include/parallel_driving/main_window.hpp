@@ -83,13 +83,9 @@ public Q_SLOTS:
 	/* 界面相关槽函数 */
 	void menu_pop_load_config();
 
-	void getTopic_slot(const QString &node);
-	void getSelectedImg_slot(QStringList *topics);
-	void testNewFeatures();			// 测试槽函数
+	void getSelectedImg_slot(QStringList *topics, std::string prefix);
 
 private:
-	bool isShutdown = true;
-	std::string prefix = "";
 
 	Ui::MainWindowDesign ui;
 	QNode qnode;				// ROS节点相关

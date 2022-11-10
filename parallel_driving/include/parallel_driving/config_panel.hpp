@@ -12,7 +12,7 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include <QDebug>
-
+#include <unordered_map>
 #include "./qnode.hpp"
 #include "ui_config_panel.h"
 
@@ -21,7 +21,7 @@ namespace parallel_driving {
 
 struct NodeInfo {
     std::string nodeName;
-    ros::V_string topics;
+    ros::master::V_TopicInfo topicInfo;
 };
 
 
@@ -38,14 +38,14 @@ public:
 
     void addChekoBox(std::string topicName);
 
-    
+    void createNodeMap(std::string nodeName, std::string prefix);
+
+    bool isROSCarNode(std::string nodeName, std::string &prefix);
 
 Q_SIGNALS:
-    void getConfigInfo(ConfigInfo *config);
-    // 广播获取节点话题信号 给main_window
-    void getTopic_signal(const QString &node);      
+    void getConfigInfo(ConfigInfo *config);      
     // 用户选择订阅的话题信号
-    void getSelectedImg_signal(QStringList *topics);
+    void getSelectedImg_signal(QStringList *topics, std::string prefix);
 
 public Q_SLOTS:
     void ros_connect_clicked();
@@ -59,13 +59,14 @@ private:
 
     void initWindow();
 
-    // std::vector<NodeInfo*> *allNodeInfo;    // 保存所有节点的信息
-
     Ui::ConfigPanel* ui;
-
+    
+    std::unordered_map<std::string, NodeInfo>  node_map;   // 保存所有节点的信息
+    ros::master::V_TopicInfo topics_info;
     ros::V_string rosNodes;     // 存储当前网络中的节点名称
 
     QListWidget *listwidget;
+    std::string prefix = "";
 
 };
 

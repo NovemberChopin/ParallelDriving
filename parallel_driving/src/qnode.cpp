@@ -66,7 +66,7 @@ void QNode::restoreTopic(std::string prefix) {
 	this->pub_ctrl_cmd = node.advertise<yhs_can_msgs::ctrl_cmd>(prefix+"ctrl_cmd", 5);
 	this->pub_io_cmd = node.advertise<yhs_can_msgs::io_cmd>(prefix+"io_cmd", 5);
 	this->sub_ctrl_fb = node.subscribe(prefix+"ctrl_fb", 5, &QNode::ctrlCallback, this);
-	std::cout << "--------------------" << std::endl;
+	std::cout << "------- 要订阅的话题 -------" << std::endl;
 	for (auto item: configInfo->imageTopics) {
 		std::cout << item.toStdString() << std::endl;
 	}
@@ -81,6 +81,12 @@ void QNode::restoreTopic(std::string prefix) {
 	ros::V_string topics;
 	ros::this_node::getAdvertisedTopics(topics);
 	for (auto t: topics) {
+		std::cout << t << std::endl;
+	}
+	std::cout << "--- sub topic ---" << std::endl;
+	ros::V_string sub_topics;
+	ros::this_node::getSubscribedTopics(sub_topics);
+	for (auto t: sub_topics) {
 		std::cout << t << std::endl;
 	}
 }
@@ -103,6 +109,7 @@ void QNode::setConfigInfo(ConfigInfo *config) {
 }
 
 void QNode::setImageTopic(QStringList *list) {
+	this->configInfo->imageTopics.clear();		// 先清空话题
 	for (int i=0; i<list->size(); i++) {
 		this->configInfo->imageTopics.push_back(list->at(i));
 	}

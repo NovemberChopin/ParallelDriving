@@ -75,8 +75,6 @@ private:
 	void recvData();
 	void sendData();
 
-	std::string prefix = "car0_";
-
 };
 
 }

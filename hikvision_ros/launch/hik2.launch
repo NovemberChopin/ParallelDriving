@@ -1,10 +1,11 @@
 <launch>
 
-    <arg name="car1_name" default="car1"/>
+    <arg name="car2_name" default="car2"/>
 
-<group ns="$(arg car1_name)">
+<group ns="$(arg car2_name)">
 
-    <arg name="ip_addr" default="192.168.50.64"/>
+    <arg name="ip_addr_1" default="192.168.50.66"/>
+    
     <arg name="user_name" default="admin"/>
     <arg name="password" default="js123456"/>
     <arg name="port" default="8000"/>
@@ -19,19 +20,14 @@
     <arg name="camera_info_url" default=""/>
 
     <!-- 启动ROS小车驱动 -->
-    <!-- <node pkg="yhs_can_control" type="yhs_can_control_node" name="yhs_can_control_node" output="screen">
-    </node> -->
-
-    <node pkg="test_qt_ros" type="yhs_test_qt_ros" name="yhs_can_control_node" output="screen">
+    <node pkg="yhs_can_control" type="yhs_can_control_node" name="yhs_can_control_node" output="screen">
     </node>
 
     <node pkg="hikvision_ros" type="hik_cam_node" name="hik_node_1" output="screen">
-
         <!-- modify LD_LIBRARY_PATH for loading hikvision sdk -->
         <env name="LD_LIBRARY_PATH"
             value="$(env LD_LIBRARY_PATH):$(find hikvision_ros)/lib:$(find hikvision_ros)/lib/HCNetSDKCom"/>
-
-        <param name="ip_addr" value="$(arg ip_addr)" />
+        <param name="ip_addr" value="$(arg ip_addr_1)" />
         <param name="user_name" value="$(arg user_name)" />
         <param name="password" value="$(arg password)" />
         <param name="port" value="$(arg port)" />
