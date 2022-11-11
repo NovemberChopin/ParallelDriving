@@ -30,11 +30,11 @@ QNode::~QNode() {
 }
 
 
-bool QNode::init(const std::string &master_url, const std::string &host_url) {
+bool QNode::init() {
 	std::map<std::string,std::string> remappings;
-	remappings["__master"] = master_url;
-	remappings["__hostname"] = host_url;
-	ros::init(remappings, "parallel_driving");
+	remappings["__master"] = this->configInfo->rosMasterUri.toStdString();
+	remappings["__hostname"] = this->configInfo->localhost.toStdString();
+	ros::init(remappings, this->configInfo->nodename.toStdString());
 	if (!ros::master::check() ) {
 		return false;
 	}
@@ -45,9 +45,26 @@ bool QNode::init(const std::string &master_url, const std::string &host_url) {
 }
 
 
-void QNode::shutdownTopic() {
+void QNode::shutdownPubTopic() {
 	this->pub_ctrl_cmd.shutdown();
 	this->pub_io_cmd.shutdown();
+	std::cout << "shutdown pub topic" << std::endl;
+}
+
+void QNode::restorePubTopic(std::string prefix) {
+	ros::NodeHandle node;
+	this->pub_ctrl_cmd = node.advertise<yhs_can_msgs::ctrl_cmd>(prefix+"ctrl_cmd", 5);
+	this->pub_io_cmd = node.advertise<yhs_can_msgs::io_cmd>(prefix+"io_cmd", 5);
+	std::cout << "restore pub topic: " << std::endl;
+	ros::V_string topics;
+	ros::this_node::getAdvertisedTopics(topics);
+	for (auto t: topics) {
+		std::cout << t << std::endl;
+	}
+}
+
+
+void QNode::shutdownSubTopic() {
 	this->sub_ctrl_fb.shutdown();
 
 	this->image_sub0.shutdown();
@@ -55,15 +72,13 @@ void QNode::shutdownTopic() {
 	this->image_sub2.shutdown();
 	this->image_sub3.shutdown();
 	this->image_sub4.shutdown();
-	std::cout << "all topic is shutdown on master node" << std::endl;
+	std::cout << "shutdown sub topic" << std::endl;
 }
 
 
-void QNode::restoreTopic(std::string prefix) {
+void QNode::restoreSubTopic(std::string prefix) {
 	ros::NodeHandle node;
 	image_transport::ImageTransport it(node);
-	this->pub_ctrl_cmd = node.advertise<yhs_can_msgs::ctrl_cmd>(prefix+"ctrl_cmd", 5);
-	this->pub_io_cmd = node.advertise<yhs_can_msgs::io_cmd>(prefix+"io_cmd", 5);
 	this->sub_ctrl_fb = node.subscribe(prefix+"ctrl_fb", 5, &QNode::ctrlCallback, this);
 	std::cout << "------- 要订阅的话题 -------" << std::endl;
 	for (auto item: configInfo->imageTopics) {
@@ -75,14 +90,7 @@ void QNode::restoreTopic(std::string prefix) {
 	image_sub3 = it.subscribe(configInfo->imageTopics[3].toStdString(), 1, &QNode::imgCallback_3, this);
 	image_sub4 = it.subscribe(configInfo->imageTopics[4].toStdString(), 1, &QNode::imgCallback_4, this);
 	
-	std::cout << "all topic is reback on master node" << std::endl;
-	// 获取当前节点订阅的话题名称
-	ros::V_string topics;
-	ros::this_node::getAdvertisedTopics(topics);
-	for (auto t: topics) {
-		std::cout << t << std::endl;
-	}
-	std::cout << "--- sub topic ---" << std::endl;
+	std::cout << "restore sub topic: " << std::endl;
 	ros::V_string sub_topics;
 	ros::this_node::getSubscribedTopics(sub_topics);
 	for (auto t: sub_topics) {

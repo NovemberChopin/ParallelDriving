@@ -42,6 +42,7 @@ public:
 
     bool isROSCarNode(std::string nodeName, std::string &prefix);
 
+    Ui::ConfigPanel* getUIPoint() {return this->ui;}
 Q_SIGNALS:
     void getConfigInfo(ConfigInfo *config);      
     // 用户选择订阅的话题信号

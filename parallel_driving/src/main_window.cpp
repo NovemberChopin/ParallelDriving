@@ -23,6 +23,10 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 
 	p_velo_timer = new QTimer(this);
 	p_steer_timer = new QTimer(this);
+	p_check_timer = new QTimer(this);
+	if (p_check_timer->isActive() == false) {
+		p_check_timer->start(1000);		// 时间间隔为 1 秒
+	}
 
 	this->cam_num = 5;			// 相机数量
 	
@@ -38,15 +42,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
         this->vec_map2.push_back(m);
     }
 
-	/* 初始化 ctrl_cmd 话题数据 */
-	u_int8_t gear = 1;				// 初始化时候为驻车
-	u_int8_t brake = 0;
-	float velocity = 0.0;
-	float steer = 0.0;
-	this->ctrl_msg_.ctrl_cmd_gear = gear;
-	this->ctrl_msg_.ctrl_cmd_velocity = velocity;
-	this->ctrl_msg_.ctrl_cmd_steering = steer;
-	this->ctrl_msg_.ctrl_cmd_Brake = brake;
+	this->initPubMsg();
 
 	this->initWindow();		// 初始化界面
 	// QT类获取键盘焦点时才可以获取事件，当页面布局复杂时，焦点可能不在该类中。
@@ -71,7 +67,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	// 计时器超时信号
 	QObject::connect(p_velo_timer, &QTimer::timeout, this, &MainWindow::handleVelocity);
 	QObject::connect(p_steer_timer, &QTimer::timeout, this, &MainWindow::handleSteer);
-
+	QObject::connect(p_check_timer, &QTimer::timeout, this, &MainWindow::checkROSStatus);
 	// this->setCentralWidget(this->init_main_page());
 }
 
@@ -87,14 +83,34 @@ void MainWindow::getSelectedImg_slot(QStringList *topics, std::string prefix) {
 		QMessageBox::information(this, "错误", "话题不足五个!");
 		return;
 	}
+	this->prefix = prefix;
 	qDebug() << "--- getSelectedTopic_slot ---";
 	this->qnode.setImageTopic(topics);
-	this->stopThread();
-	this->qnode.shutdownTopic();	// 关闭现有的订阅话题
-	// 启动 发布/订阅 话题
-	std::cout << "启动话题: " << prefix << std::endl;
-	this->qnode.restoreTopic(prefix+'/');
-	this->startThread();		// 启动发送话题线程
+	std::cout << "关闭所有话题: " << prefix << std::endl;
+	this->qnode.shutdownPubTopic();
+	this->qnode.shutdownSubTopic();
+	// this->stopThread();				// 停止线程（不清楚为啥不起作用）
+
+	std::cout << "重新启动话题: " << prefix << std::endl;
+	this->qnode.restorePubTopic(prefix+'/');
+	this->qnode.restoreSubTopic(prefix+'/');
+	// if (this->hasJoy == false) {
+	// 	this->startThread();		// 启动发送话题线程
+	// }
+
+	// 更新主界面小车话题展示
+	ui.car_name->setText(QString::fromStdString(prefix));
+	listwidget->clear();
+	// const QStringList topicList = *topics;
+	// listwidget->addItems(topicList);
+
+	for (int i=0; i<topics->size(); i++) {
+		QListWidgetItem *item = new QListWidgetItem;
+		item->setSizeHint(QSize(0, 30));
+		const QString topic = topics->at(i);
+		item->setText(topic);
+		listwidget->addItem(item);
+	}
 }
 
 
@@ -134,12 +150,36 @@ void MainWindow::initWindow() {
 		this->p_Menu->exec(QCursor::pos());
 	});
 
+	ui.master_status->setText("未连接");
+	ui.joy_status->setText("未连接");
+
+	// 初始化信息展示区域小车节点信息
+	ui.car_name->setText("未连接小车");
+	listwidget = new QListWidget;
+	listwidget->setStyleSheet("background-color: rgb(7, 28, 43);");
+	QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(listwidget);
+    ui.groupBox->setLayout(layout);
+
 	// 显示页面
 	this->pageL->show();
 	this->pageC->show();
 	this->show();
 }
 
+
+void MainWindow::initPubMsg() {
+	this->gear_P = true;
+	/* 初始化 ctrl_cmd 话题数据 */
+	u_int8_t gear = 1;				// 初始化时候为驻车
+	u_int8_t brake = 0;
+	float velocity = 0.0;
+	float steer = 0.0;
+	this->ctrl_msg_.ctrl_cmd_gear = gear;
+	this->ctrl_msg_.ctrl_cmd_velocity = velocity;
+	this->ctrl_msg_.ctrl_cmd_steering = steer;
+	this->ctrl_msg_.ctrl_cmd_Brake = brake;
+}
 
 /**
  * @brief 接收 qnode 接收到的小车 速度信息 信号，并将其展示
@@ -222,21 +262,28 @@ void MainWindow::handleVelocity() {
 
 
 void MainWindow::sendCtrlCmd() {
-    ros::Rate loop_rate(100);		// 以100hz的频率发送话题
+	if (!this->hasJoy) {
+		ros::Rate loop_rate(100);		// 以100hz的频率发送话题
     
-    ROS_INFO("start send ctrl message");
-    while (ros::ok())
-    {	
-        this->qnode.pub_ctrl_cmd.publish(this->ctrl_msg_);
+		ROS_INFO("start send ctrl message");
+		while (ros::ok())
+		{	
+			this->qnode.pub_ctrl_cmd.publish(this->ctrl_msg_);
 
-        ros::spinOnce();
+			ros::spinOnce();
 
-        loop_rate.sleep();
-    }
+			loop_rate.sleep();
+		}
+	}
 }
 
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
+	if (this->hasJoy) {
+		QMessageBox::information(this, "注意", "现已切换至方向盘控制!");
+		return;
+	}
+
 	Q_UNUSED(event);
 	if (event->key() == Qt::Key_P) {
 		this->gear_P = !this->gear_P;
@@ -383,6 +430,68 @@ void MainWindow::openConfigPanel() {
 
 
 /**
+ * @brief 以固定的频率执行，系统的状态
+ * 
+ */
+void MainWindow::checkROSStatus() {
+    // 1. 如果主节点未启动，禁用除连接按钮之外的所有按钮
+	Ui::ConfigPanel* config_ui = configP->getUIPoint();
+    if (!ros::master::check()) {
+        config_ui->btn_connect->setEnabled(true);
+        config_ui->btn_refresh->setEnabled(false);
+        config_ui->btn_confirm->setEnabled(false);
+    } else {
+        config_ui->btn_connect->setEnabled(false);
+        config_ui->btn_refresh->setEnabled(true);
+        config_ui->btn_confirm->setEnabled(true);
+    }
+	
+	if (ros::master::check()) {
+		// 2. 检测是否接入罗技方向盘，如果接入，自动切换成方向盘控制
+		ros::V_string nodes;
+		ros::master::getNodes(nodes);
+		std::string joy_node = "joy_node";
+		std::string joy_to_car = "joy_to_car_node";
+		bool flag = false;		// 标志位，是否检测到 Joy
+		for (auto n: nodes) {
+			if (n.find(joy_node) != std::string::npos || 
+				n.find(joy_to_car) != std::string::npos) {
+				flag = true;
+				break;
+			}
+		}
+		if (flag == true) {		// 检测到 Joy 节点
+			if (this->hasJoy == false) {
+				// 第一次接入，要弹窗
+				this->hasJoy = true;
+				this->qnode.shutdownPubTopic();		// 停止发布控制话题
+				ui.joy_status->setText("已连接");
+				QMessageBox::information(this, "提示", "检测到罗技方向盘，已切换至方向盘控制!");
+				// 关闭软件 话题发送线程
+				// this->stopThread();
+			} else {
+				// Joy 正在运行，什么也不用做
+			}
+		} else {
+			if (this->hasJoy == true) {
+				// 没有检测到 Joy,但是 hasJoy == true。 -> Joy 节点退出
+				this->hasJoy = false;
+				this->initPubMsg();
+				if (this->prefix != "") {	// 说明已经选择了话题播放，恢复话题发布
+					qnode.restorePubTopic(this->prefix+'/');					
+				}
+				ui.joy_status->setText("未连接");
+				QMessageBox::information(this, "提示", "方向盘移出，切换至软件控制!");
+				// this->startThread();
+			} else {
+				// 没有接入 Joy，啥也不用做
+			}
+		}
+	}
+}
+
+
+/**
  * @brief 接收车辆配置页面返回信号
  * 
  * @param config 
@@ -393,8 +502,7 @@ void MainWindow::connectByConfig(ConfigInfo *config) {
     qDebug() << config->localhost;
 	// qDebug() << config->imageTopics[0];
 	this->qnode.setConfigInfo(config);
-    if (!qnode.init(config->rosMasterUri.toStdString(), 
-					config->localhost.toStdString())) {
+    if (!qnode.init()) {
         // 连接失败
 		QMessageBox errBox;
 		errBox.setText("主节点启动失败，请检查节点地址！");
@@ -404,7 +512,13 @@ void MainWindow::connectByConfig(ConfigInfo *config) {
         QMessageBox infoBox;
 		infoBox.setText("主节点启动成功！");
 		infoBox.exec();
-		// boost::thread send_ctrl_thread(boost::bind(&MainWindow::sendCtrlCmd, this));
+		// 更新主页面信息
+		ui.master_status->setText("已连接");
+		ui.master_uri->setText(config->rosMasterUri);
+		ui.localhost->setText(config->localhost);
+		ui.nodename->setText(config->nodename);
+		// 启动发送小车控制话题线程
+		boost::thread send_ctrl_thread(boost::bind(&MainWindow::sendCtrlCmd, this));
 		// boost::thread send_io_thread(boost::bind(&MainWindow::sendIOCmd, this));
     }
 }
@@ -417,8 +531,8 @@ void MainWindow::startThread() {
 
 
 void MainWindow::stopThread() {
-	std::cout << "关闭线程" << std::endl;
 	if (this->pub_thread) {
+		std::cout << "关闭线程" << std::endl;
 		this->pub_thread->interrupt();
 	}
 }
@@ -506,6 +620,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 // 关闭软件
 void MainWindow::closeWindow() {
+	if (p_check_timer->isActive() == true) {
+		p_check_timer->stop();
+	}
 	this->close();
 }
 

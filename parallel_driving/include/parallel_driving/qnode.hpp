@@ -33,8 +33,9 @@ namespace parallel_driving {
 
 
 struct ConfigInfo {
-	QString rosMasterUri;
-	QString localhost;
+	QString rosMasterUri;	// master 节点地址
+	QString localhost;		// 本机ip
+	QString nodename;		// 本机节点名称
 	std::vector<QString> imageTopics;
 };
 
@@ -44,7 +45,7 @@ class QNode : public QThread {
 public:
 	QNode(int argc, char** argv );
 	virtual ~QNode();
-	bool init(const std::string &master_url, const std::string &host_url);
+	bool init();
 	void run();
 
 	void setConfigInfo(ConfigInfo *config);
@@ -52,8 +53,11 @@ public:
 	void ImgCallback(const sensor_msgs::ImageConstPtr &msg, int cam_index);
 	void ctrlCallback(const yhs_can_msgs::ctrl_fb& msg);
 
-	void shutdownTopic();						// 停止订阅/发布话题
-	void restoreTopic(std::string prefix);		// 重新订阅/发布话题
+	void shutdownPubTopic();					// 停止发布话题
+	void restorePubTopic(std::string prefix);	// 重新发布话题
+
+	void shutdownSubTopic();					// 停止订阅话题
+	void restoreSubTopic(std::string prefix);	// 重新订阅话题
 
 	void shutdownService();						// 停止服务/客户端
 	void restoreService(std::string prefix);	// 恢复服务/客户端

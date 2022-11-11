@@ -23,7 +23,8 @@ ConfigPanel::ConfigPanel(QWidget *parent) :
     QObject::connect(ui->comboBox, SIGNAL(activated(const QString)), 
                     this, SLOT(activated_slot(const QString)));
     ui->rosMasterUri->setText("http://192.168.50.23:11311");
-    ui->localhost->setText("http://192.168.50.23");
+    ui->localhost->setText("192.168.50.23");
+    ui->rosHostname->setText("Parallel_driving");
     initWindow();
 }
 
@@ -37,6 +38,7 @@ void ConfigPanel::initWindow() {
 
     // 设置窗体居中显示，并且不能更改大小
     this->setFixedSize(600, 500);
+    this->setWindowTitle("车辆配置");
     QDesktopWidget desktop;
     int screenX=desktop.availableGeometry().width();
     int screenY=desktop.availableGeometry().height();
@@ -54,6 +56,7 @@ void ConfigPanel::initWindow() {
     // ui->ros_connect->setStyleSheet(" border: 2px solid #000000");    
 
     listwidget = new QListWidget;
+    listwidget->setStyleSheet("background-color: rgb(208, 247, 255);");
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(listwidget);
     ui->showTopics->setLayout(layout);
@@ -75,6 +78,9 @@ void ConfigPanel::addChekoBox(std::string topicName) {
  * 
  */
 void ConfigPanel::getSelectedCheckItems() {
+    if (!ros::master::check()) {
+        QMessageBox::information(this, "提示", "请先连接主节点!");
+    }
     QStringList *itemList = new QStringList();
     for (int i=0; i<listwidget->count(); i++) {
         QListWidgetItem *item = listwidget->item(i);
@@ -85,10 +91,9 @@ void ConfigPanel::getSelectedCheckItems() {
             itemList->append(checkboxStr);
         }
     }
-    qDebug() << "------ 选择的话题列表为 -----";
-    qDebug() << *itemList;
+    // qDebug() << "------ 选择的话题列表为 -----";
+    // qDebug() << *itemList;
     if (itemList->size() == 0) {
-        qDebug() << "请选择要订阅的话题";
         QMessageBox::information(this, "注意", "请选择话题！");
     } else if (itemList->size() > 5) {
         QMessageBox::information(this, "注意", "只能选择5个话题!");
@@ -101,9 +106,8 @@ void ConfigPanel::getSelectedCheckItems() {
         }
         // 把选择的话题传递给 qnode
         Q_EMIT getSelectedImg_signal(itemList, this->prefix);
+        this->close();
     }
-    
-    this->close();
 }
 
 
@@ -116,6 +120,7 @@ void ConfigPanel::ros_connect_clicked() {
     ConfigInfo *configInfo = new ConfigInfo();
     configInfo->rosMasterUri = ui->rosMasterUri->text();
     configInfo->localhost = ui->localhost->text();
+    configInfo->nodename = ui->rosHostname->text();
 
     Q_EMIT getConfigInfo(configInfo);
 }
@@ -220,6 +225,8 @@ bool ConfigPanel::isROSCarNode(std::string nodeName, std::string &prefix) {
  * 
  */
 void ConfigPanel::refresh_node() {
+    if (!ros::master::check())
+        return;
     ui->comboBox->clear();
     this->rosNodes.clear();
     this->topics_info.clear();

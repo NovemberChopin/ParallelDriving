@@ -8,6 +8,8 @@
 #include <QImage>
 #include <QString>
 #include <QPushButton>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMainWindow>
@@ -49,6 +51,7 @@ public:
 	~MainWindow();
 
 	void initWindow();		// 初始化界面相关
+	void initPubMsg();		// 初始化控制话题信息
 
 	void closeEvent(QCloseEvent *event); // Overloaded function
 
@@ -67,6 +70,7 @@ public:
 	QPixmap fixImage(cv::Mat img, int cam_index);// 修复并转换图像
 
 public Q_SLOTS:
+	
 	void openConfigPanel();				// 打开ROS配置页面
 	void closeWindow();
 	void connectByConfig(ConfigInfo* config);	// 处理配置弹窗
@@ -75,6 +79,7 @@ public Q_SLOTS:
 
 	void handleVelocity();				// 处理速度
 	void handleSteer();					// 处理转向角
+	void checkROSStatus();				// 检查ROS状态
 
 	void setImage_0(cv::Mat img);
 	void setImage_1(cv::Mat img);
@@ -90,11 +95,17 @@ public Q_SLOTS:
 private:
 	boost::shared_ptr<boost::thread> pub_thread;
 
+	QTimer *p_check_timer;		// 系统自检计时器
+	bool hasJoy = false;		// 是否存在 Joy 接入
+	std::string prefix = "";
+
 	Ui::MainWindowDesign ui;
 	QNode qnode;				// ROS节点相关
 	ConfigPanel *configP;		// ROS配置对话框
 	PageLeft *pageL;			// 左边页面
 	PageCenter *pageC;			// 中间页面
+
+	QListWidget *listwidget;	// 信息展示区域小车订阅的小车话题
 
 	int cam_num;				// 相机数量
 	// 相机参数
