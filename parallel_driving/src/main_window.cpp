@@ -86,17 +86,30 @@ void MainWindow::getSelectedImg_slot(QStringList *topics, std::string prefix) {
 	this->prefix = prefix;
 	qDebug() << "--- getSelectedTopic_slot ---";
 	this->qnode.setImageTopic(topics);
-	std::cout << "关闭所有话题: " << prefix << std::endl;
-	this->qnode.shutdownPubTopic();
-	this->qnode.shutdownSubTopic();
-	// this->stopThread();				// 停止线程（不清楚为啥不起作用）
 
-	std::cout << "重新启动话题: " << prefix << std::endl;
-	this->qnode.restorePubTopic(prefix+'/');
-	this->qnode.restoreSubTopic(prefix+'/');
-	// if (this->hasJoy == false) {
-	// 	this->startThread();		// 启动发送话题线程
-	// }
+	if (this->hasJoy) {		// 当前由方向盘控制
+		// 通知方向盘，切换小车: 通过 get_prefix 服务传递给 joy_to_car 节点
+		ros::NodeHandle n;
+		ros::ServiceClient client = n.serviceClient<joy_to_car::GetPrefix>("get_prefix");
+		joy_to_car::GetPrefix srv;
+		srv.request.prefix = prefix;
+		if (client.call(srv)) {
+			QString text = QString::fromStdString("方向盘已切换至" + prefix + "小车");
+			QMessageBox::information(this, "提示", text);
+		}
+	} else {				// 软件控制
+		std::cout << "关闭所有话题: " << prefix << std::endl;
+		this->qnode.shutdownPubTopic();
+		this->qnode.shutdownSubTopic();
+		// this->stopThread();				// 停止线程（不清楚为啥不起作用）
+
+		std::cout << "重新启动话题: " << prefix << std::endl;
+		this->qnode.restorePubTopic(prefix+'/');
+		this->qnode.restoreSubTopic(prefix+'/');
+		// if (this->hasJoy == false) {
+		// 	this->startThread();		// 启动发送话题线程
+		// }
+	}
 
 	// 更新主界面小车话题展示
 	ui.car_name->setText(QString::fromStdString(prefix));
@@ -279,7 +292,8 @@ void MainWindow::sendCtrlCmd() {
 
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-	if (this->hasJoy) {
+	if (this->hasJoy && (event->key() == Qt::Key_P || event->key() == Qt::Key_Space || event->key() == Qt::Key_Up ||
+		event->key() == Qt::Key_Down || event->key() == Qt::Key_Left || event->key() == Qt::Key_Right)) {
 		QMessageBox::information(this, "注意", "现已切换至方向盘控制!");
 		return;
 	}
@@ -462,11 +476,20 @@ void MainWindow::checkROSStatus() {
 		}
 		if (flag == true) {		// 检测到 Joy 节点
 			if (this->hasJoy == false) {
-				// 第一次接入，要弹窗
-				this->hasJoy = true;
-				this->qnode.shutdownPubTopic();		// 停止发布控制话题
-				ui.joy_status->setText("已连接");
-				QMessageBox::information(this, "提示", "检测到罗技方向盘，已切换至方向盘控制!");
+				// 通知 joy_to_car 节点，传递 prefix 
+				ros::NodeHandle n;
+				ros::ServiceClient client = n.serviceClient<joy_to_car::GetPrefix>("get_prefix");
+				joy_to_car::GetPrefix srv;
+				srv.request.prefix = this->prefix;
+				if (client.call(srv)) {
+					// 第一次接入，要弹窗
+					this->hasJoy = true;
+					this->qnode.shutdownPubTopic();		// 停止发布控制话题
+					ui.joy_status->setText("已连接");
+					QMessageBox::information(this, "提示", "检测到罗技方向盘，已切换至方向盘控制!");
+				} else {
+					QMessageBox::information(this, "提示", "请先关闭方向盘，连接小车之后再启动!");
+				}
 				// 关闭软件 话题发送线程
 				// this->stopThread();
 			} else {

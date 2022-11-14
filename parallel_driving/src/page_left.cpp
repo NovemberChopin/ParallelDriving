@@ -60,10 +60,10 @@ void PageLeft::timeout_slot() {
  * scale 表示小车实际转向与方向盘旋转的对应关系 [-25, 25] -> [-100, 100]
  */
 void PageLeft::updateSteer(double angle) {
-    if (angle < 0) {
+    if (angle < 0) {        // 往右边转
         ui->steer_left->setStyleSheet(this->steer_dark);
         ui->steer_right->setStyleSheet(this->steer_green);
-    } else if (angle > 0) {
+    } else if (angle > 0) { // 往左转
         ui->steer_left->setStyleSheet(this->steer_green);
         ui->steer_right->setStyleSheet(this->steer_dark);
     } else {
@@ -72,7 +72,7 @@ void PageLeft::updateSteer(double angle) {
     }
     int scale = 4;
     double base_angle = 115;    // 图片初始时的偏的角度
-    my_label->setAngle(angle * 4 + base_angle);
+    my_label->setAngle(-(angle * 4) + base_angle);
     my_label->update();
     // 显示转向角度百分比。qRound：四舍五入
     QString str = QString("%1\%").arg(qRound(qFabs(angle) / 25.0 * 100) );

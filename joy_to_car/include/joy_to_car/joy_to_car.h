@@ -5,6 +5,7 @@
 #include "yhs_can_msgs/ctrl_fb.h"
 
 #include <sensor_msgs/Joy.h>    // 罗技话题数据
+#include "joy_to_car/GetPrefix.h"
 
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
@@ -12,6 +13,8 @@
 class JoyToCar
 {
 private:
+    
+    std::string prefix = "";        // 当前的小车
     /* data */
     u_int8_t trun_lamp_;            // 转向灯
     bool upper_beam_;               // 远光灯
@@ -27,6 +30,8 @@ private:
     ros::Subscriber sub_ctrl_fb_;
     ros::Publisher pub_ctrl_;
     ros::Publisher pub_io_;
+
+    ros::ServiceServer service;
 public:
     JoyToCar(/* args */);
     ~JoyToCar();
@@ -36,4 +41,10 @@ public:
     void ctrlFBCallback(const yhs_can_msgs::ctrl_fb& msg);
     void sendCtrlCmd();
     void sendIOCmd();
+
+    void shutdownTopics();
+    void restoreTopics(std::string prefix);
+
+    bool getPrefixCall(joy_to_car::GetPrefix::Request &req, 
+                    joy_to_car::GetPrefix::Response &res);
 };

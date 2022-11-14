@@ -16,16 +16,32 @@ bool JoyToCar::init() {
         return false;
     }
     ros::start();
+    service = node_.advertiseService("get_prefix", &JoyToCar::getPrefixCall, this);
     sub_joy_ = node_.subscribe("joy", 10, &JoyToCar::joyCallback, this);
-    sub_ctrl_fb_ = node_.subscribe("ctrl_fb", 5, &JoyToCar::ctrlFBCallback, this);
+    // sub_ctrl_fb_ = node_.subscribe("ctrl_fb", 5, &JoyToCar::ctrlFBCallback, this);
 
-    pub_ctrl_ = node_.advertise<yhs_can_msgs::ctrl_cmd>("ctrl_cmd", 5);
-    pub_io_ = node_.advertise<yhs_can_msgs::io_cmd>("io_cmd", 5);
+    // pub_ctrl_ = node_.advertise<yhs_can_msgs::ctrl_cmd>("ctrl_cmd", 5);
+    // pub_io_ = node_.advertise<yhs_can_msgs::io_cmd>("io_cmd", 5);
 
     boost::thread send_ctrl_thread(boost::bind(&JoyToCar::sendCtrlCmd, this));
     boost::thread send_io_thread(boost::bind(&JoyToCar::sendIOCmd, this));
     ros::spin();
     return true;
+}
+
+
+void JoyToCar::shutdownTopics() {
+    this->sub_ctrl_fb_.shutdown();
+    this->pub_ctrl_.shutdown();
+    this->pub_io_.shutdown();
+}
+
+
+void JoyToCar::restoreTopics(std::string prefix) {
+    sub_ctrl_fb_ = node_.subscribe(prefix+"ctrl_fb", 5, &JoyToCar::ctrlFBCallback, this);
+
+    pub_ctrl_ = node_.advertise<yhs_can_msgs::ctrl_cmd>(prefix+"ctrl_cmd", 5);
+    pub_io_ = node_.advertise<yhs_can_msgs::io_cmd>(prefix+"io_cmd", 5);
 }
 
 
@@ -146,6 +162,21 @@ void JoyToCar::ctrlFBCallback(const yhs_can_msgs::ctrl_fb& msg) {
     // std::cout << "velocity fb is " << msg.ctrl_fb_velocity << " " << msg.ctrl_fb_steering << std::endl;
     this->velo_fb_ = msg.ctrl_fb_velocity;
 }
+
+
+bool JoyToCar::getPrefixCall(joy_to_car::GetPrefix::Request &req, 
+                    joy_to_car::GetPrefix::Response &res) {
+    if (req.prefix == "") {
+        return false;
+    }
+    std::string prefix = req.prefix;
+    this->shutdownTopics();
+    this->restoreTopics(prefix+"/");
+    std::cout << "joy_to_car: restore topics" << std::endl;
+
+    return true;
+}
+
 
 int main(int argc, char **argv)
 {

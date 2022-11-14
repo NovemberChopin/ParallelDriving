@@ -25,6 +25,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/core.hpp>
 
+#include "joy_to_car/GetPrefix.h"
 #include "yhs_can_control/GetTopics.h"
 #include "yhs_can_msgs/io_cmd.h"
 #include "yhs_can_msgs/ctrl_cmd.h"
