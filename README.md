@@ -52,13 +52,13 @@ ros小车：yhs_FR 07
    udevadm control --reload
    ```
 
-6. 进入`catkin_master`工作目录，运行
+6. 进入`catkin_PD`工作目录，运行
 
    ```bash
    roslaunch launch/run.launch
    ```
 
-7. 查看书否有 `>>open deivce success!` 输出。然后另起一终端，输入:
+7. 查看终端是否有 `>>open deivce success!` 输出。然后另起一终端，输入:
 
    ```bash
    rostopic list
@@ -184,24 +184,24 @@ ros小车：yhs_FR 07
 
 #### 2.2 配置ROS分布式模式
 
-运行在小车上位机的ROS节点称为 `master` (主机)节点，运行平行驾驶软件的机器称为 `sliver` (从机)节点。确保 master节点和sliver节点IP处于同一网段
+运行平行驾驶的ROS节点称为 `master` (主机)节点，运行小车与摄像头驱动的工控机称为 `sliver` (从机)节点。确保 master节点和sliver节点IP处于同一网段
 
-- 主机IP：192.168.50.76
-- 从机IP：192.168.50.23
+- 主机IP：192.168.50.23
+- 从机IP：192.168.50.76
 
 ##### 2.2.1 Master 节点配置
 
 1. 终端输入 `sudo gedit /etc/hosts ` 添加
 
    ```bash
-   192.168.50.23	js-Mi # Sliver(从机)ip和机器名
+   192.168.50.76	autolabor-hosts # Sliver(从机)ip和机器名
    ```
 
 2. 终端输入 `sudo gedit .bashrc` 添加
 
    ```bash
-   export ROS_MASTER_URI=http://192.168.50.76:11311   #192.168.50.76是主机ip
-   export ROS_HOSTNAME=192.168.50.76	#192.168.50.76 是主机ip
+   export ROS_MASTER_URI=http://192.168.50.23:11311   #192.168.50.23是主机ip
+   export ROS_HOSTNAME=192.168.50.23	#192.168.50.23 是主机ip
    ```
 
    保存后关闭，输入 `source .bashrc` 使得环境变量生效
@@ -211,80 +211,130 @@ ros小车：yhs_FR 07
 1. 终端输入 `sudo gedit /etc/hosts ` 添加
 
    ```bash
-   192.168.50.76	autolabor-hosts # Master(主机)ip和机器名
+   192.168.50.23	js-Mi # Master(主机)ip和机器名
    ```
 
 2. 终端输入 `sudo gedit .bashrc` 添加
 
    ```bash
-   export ROS_MASTER_URI=http://192.168.50.76:11311   #192.168.50.76是主机ip
-   export ROS_HOSTNAME=192.168.50.23	#192.168.50.23 是从机ip
+   export ROS_MASTER_URI=http://192.168.50.23:11311   #192.168.50.23是主机ip
+   export ROS_HOSTNAME=192.168.50.76	#192.168.50.76 是从机ip
    ```
 
    保存后关闭，输入 `source .bashrc` 使得环境变量生效。
 
-   其实第二步可以不在 .bashrc 文件中设置。只需要在运行ros命令的终端中输入 `export ROS_MASTER_URI=http://192.168.50.76:11311` 也可以，避免来回修改 .bashrc 文件。
+   其实第二步可以不在 .bashrc 文件中设置。只需要在运行ros命令的终端中输入 `export ROS_MASTER_URI=http://192.168.50.23:11311` 也可以，避免来回修改 .bashrc 文件。这样只对当前终端有效。
 
 ### 3. 软件使用
 
+文件介绍：
+
+```bash
+3.parallel_driving
+├── launch
+	├── run.launch				# 启动小车驱动
+	├── run_car1.launch			# 启动car1的小车和相机驱动，run_car2.launch同理
+	├── runJoy.launch			# 启动罗技方向盘节点
+└── src
+    ├── hikvision_ros			# 海康相机ROS驱动
+    ├── joy_to_car				# 方向盘控制小车的节点
+    ├── yhs_can_control			# ROS小车驱动
+    └── yhs_can_msgs			# ROS小车用到的消息
+```
+
 #### 3.1 启动软件
 
-1. 主机Master进入`catkin_master`文件，`catkin_make` 编译后运行：
+1. **修改相机IP**
 
-   ```bash
-   roslaunch launch/run.launch
-   ```
+   本软件用到海康威视网络摄像头，默认`IP` 为 `192.168.1.64` 。将摄像头通过网线与电脑连接，并修改电脑 `IP` 至 `192.168.1.XXX` 网段。然后打开浏览器输入 `192.168.1.64` 进入，设置摄像头的用户名与密码。
 
-2. 进入`parallel_driving/catkin_cx_07` 文件夹打开终端，首先指定Master节点：
+   选择配置->视音频 可以修改摄像头视频参数，程序使用的分辨率为 `1080x720p` ，选择到相应分辨率即可。
 
-   ```bash
-   export ROS_MASTER_URI=http://192.168.50.76:11311
-   ```
+   <img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 20-25-46.png" alt="Screenshot from 2022-11-14 20-25-46" style="zoom:67%;" />
 
-   然后`catkin_make`编译后运行 joy 节点控制小车运动：
+   选择配置->网络->基本配置，修改摄像头IP地址，将其修改为局域网同一网段。笔者当前网段为`192.168.50.XXX` ,修改如下：，点击保存即可
 
-   ```bash
-   roslaunch launch/runJoy.launch
-   ```
+   <img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 20-26-56.png" alt="Screenshot from 2022-11-14 20-26-56" style="zoom:67%;" />
 
-3. 启动 平行驾驶软件：
+   建议将所有摄像头用户名密码设置为相同，避免后续挨个配置。
 
-   ```bash
-   # 进入 parallel_driving 文件夹，终端运行
-   ./AppRun
-   ```
+2. **运行平行驾驶软件**
 
-   即可打开软件
+   - 终端进入 `3.parallel_driving/parallel_driving` 文件夹，输入
+
+     ```bash
+     ./parallel_driving-x86_64.AppImage
+     ```
+
+     即可启动软件，点击右上角车辆配置，依次填入主节点地址、IP、名称，然后点击启动ROS即可。**注意：在启动小车驱动之前必须先启动软件并连接ROS。**
+
+     <img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 20-42-09.png" alt="Screenshot from 2022-11-14 20-42-09" style="zoom:80%;" />
+
+3. **运行小车驱动**
+
+   - 将 `catkin_PD` 工作区复制到小车工控机，然后 `catkin_make` 编译
+
+   - 打开 `catkin_PD/launch/run_car1.launch` 文件，做如下修改
+
+     ```bash
+     # 1.配置当前小车的名称，默认 car1
+     <arg name="car1_name" default="car1"/> 
+     # 2.配置相机IP地址，有几个相机就设置几个，然后把相应的节点注释取消
+     <arg name="ip_addr_1" default="192.168.50.70"/>
+     # 3.相机的用户名和密码，根据实际填写
+     <arg name="user_name" default="admin"/>
+     <arg name="password" default="js123456"/>
+     ```
+
+   - 若ROS分布式没有修改 `~/.bashrc` 配置文件，则工控机起一终端指定Master地址：
+
+     ```bash
+     export ROS_MASTER_URI=http://192.168.50.76:11311
+     ```
+
+     然后运行：
+
+     ```bash
+     roslaunch launch/run_car1.launch
+     ```
+
+     > 如果有多辆小车，可以把本工作空间复制，然后根据上述进行修改
+     >
+     > 如：对于第二辆小车，可以在 run_car2.launch 中进行配置车名以及相机地址，然后运行该 launch 文件即可
 
 #### 3.2 软件使用
 
-##### 3.2.1 罗技方向盘控制小车操作
-
-- 默认空挡，档位退向前，选择前进挡，档位往后退，选择后退档
-
-- 脚踏板中间为刹车、右边为油门
-
-- 方向盘控制车辆转向
-
-- 下方红色按键为喇叭
-
-  <img src="./images/b76e97789a424242a44cc891e26dd8b7.png" style="zoom:50%;" />
-
-##### 3.2.2 软件操作方法
+##### 3.2.1 软件界面
 
 软件界面- 右
 
-<img src="./images/Screenshot from 2022-11-04 17-20-07.png" alt="Screenshot from 2022-11-04 17-20-07" style="zoom:50%;" />
+- 该界面可以展示两个摄像头画面
+- 右边展示当前ROS连接状态
 
-点击车辆配置进行ROS话题配置
+<img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 21-01-52.png" alt="Screenshot from 2022-11-14 21-01-52" style="zoom:67%;" />
 
-<img src="./images/Screenshot from 2022-11-04 17-22-17.png" alt="Screenshot from 2022-11-04 17-22-17" style="zoom: 67%;" />
+点击车辆配置进行相关配置
 
-点击确认，即可显示 `界面-左` 和`界面-中` ：
+- 左侧依次填入Master节点地址、IP、节点名，然后点击启动ROS按钮启动
+- 然后启动小车，接着点击刷新节点按钮，下拉框中会显示当前ROS环境中存在的小车节点，
+- 选择节点后，右侧区域会显示该节点发布的相机话题，勾选需要订阅的话题前，然后点击确认按钮连接小车并显示小车摄像头画面
 
- <img src="./images/Screenshot from 2022-11-04 17-20-44.png" alt="Screenshot from 2022-11-04 17-20-44" style="zoom: 50%;" />
+<img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 20-54-19.png" alt="Screenshot from 2022-11-14 20-54-19" style="zoom:80%;" />
 
+软件界面-中 ：
 
+- 显示小车前方画面
+
+  <img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 21-00-54.png" alt="Screenshot from 2022-11-14 21-00-54" style="zoom:67%;" />
+
+软件界面-左
+
+- 该界面右边可以展示两个摄像头画面
+- 左边可以实时展示车辆运行状态，包括速度、档位、方形盘角度。
+
+<img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 21-01-38.png" alt="Screenshot from 2022-11-14 21-01-38" style="zoom: 67%;" />
+
+##### 3.2.2 软件控制小车操作
 
 当界面焦点在界面-右上时，可以使用键盘控制小车：
 
@@ -293,8 +343,52 @@ ros小车：yhs_FR 07
 - 方向键左右为转向，长按转向角增加
 - 空格为刹车
 
-对于左边界面，仪表盘可以实时显示车辆速度，以及档位，方向盘转向可以实时显示车辆当前的转向状态。
+##### 3.2.3 罗技方向盘控制小车操作
 
-<img src="./images/Screenshot from 2022-11-04 17-20-53.png" alt="Screenshot from 2022-11-04 17-20-53" style="zoom:50%;" />
+罗技方形盘启动方法，电脑连接好方向盘、按照上述装好驱动后
 
+另起终端进入 `3.parallel_driving/catkin_PD` 文件夹，运行
 
+```bash
+roslaunch launch/runJoy.launch
+```
+
+即可启动。**当软件检测到方向盘接入时，会自动切换至方向盘控制。**如下所示：
+
+<img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 21-09-29.png" alt="Screenshot from 2022-11-14 21-09-29" style="zoom:67%;" />
+
+当方向盘程序关闭时，会自动切换至软件控制小车
+
+![Screenshot from 2022-11-14 21-09-49](/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 21-09-49.png)
+
+**方向盘控制方法：**
+
+- 默认空挡，档位推向前为前进挡；档位往后推为后退档
+
+- 脚踏板中间为刹车、右边为油门
+
+- 方向盘控制车辆转向
+
+- 右下方红色按键为喇叭
+
+  <img src="./images/b76e97789a424242a44cc891e26dd8b7.png" style="zoom:50%;" />
+
+##### 3.2.4 切换小车
+
+当启动多个小车时，可以在车辆配置页面点击 `刷新节点` 按钮查看当前网络中的小车节点。在下拉列表中选择对应的车辆，然后选择相应的图像话题，点击 `确认` 按钮即可实现车辆切换。此时不管是在软件控制小车、还是方向盘在控制小车，都会自动切换至选择的小车。
+
+##### 3.2.5 修复畸变
+
+将鼠标移动到画面上，右键菜单选择`加载相机配置` 菜单，弹出页面选择 `3.parallel_driving/parallel_driving/config` 中的相机内参文件，选择确认后会看到畸变已经修复。
+
+<img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-15 10-07-08.png" alt="Screenshot from 2022-11-15 10-07-08" style="zoom:67%;" />
+
+修复前：
+
+可以看到存在明显的畸变
+
+<img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-15 10-11-26.png" alt="Screenshot from 2022-11-15 10-11-26" style="zoom:67%;" />
+
+修复后：
+
+<img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-15 10-11-46.png" alt="Screenshot from 2022-11-15 10-11-46" style="zoom: 67%;" />

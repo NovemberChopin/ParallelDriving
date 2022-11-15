@@ -22,9 +22,9 @@ ConfigPanel::ConfigPanel(QWidget *parent) :
     QObject::connect(ui->btn_confirm, &QPushButton::clicked, this, &ConfigPanel::getSelectedCheckItems);
     QObject::connect(ui->comboBox, SIGNAL(activated(const QString)), 
                     this, SLOT(activated_slot(const QString)));
-    ui->rosMasterUri->setText("http://192.168.50.23:11311");
-    ui->localhost->setText("192.168.50.23");
-    ui->rosHostname->setText("Parallel_driving");
+    ui->rosMasterUri->setText("http://127.0.0.1:11311");
+    ui->localhost->setText("127.0.0.1");
+    ui->rosHostname->setText("parallel_driving");
     initWindow();
 }
 
