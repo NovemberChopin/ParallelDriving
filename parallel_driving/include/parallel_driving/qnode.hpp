@@ -8,6 +8,7 @@
 #include <ros/network.h>
 #include <ros/callback_queue.h>
 #include <std_msgs/String.h>
+#include "sensor_msgs/CompressedImage.h"
 #include "sensor_msgs/image_encodings.h"
 #include "yhs_can_msgs/io_cmd.h"
 #include "yhs_can_msgs/ctrl_cmd.h"
@@ -49,7 +50,8 @@ public:
 	void run();
 
 	void setConfigInfo(ConfigInfo *config);
-	void setImageTopic(QStringList *list);
+	void setImageTopic(QStringList *list, bool hasCompress);
+	void setIsCompressImage(bool isCompress);
 	void ImgCallback(const sensor_msgs::ImageConstPtr &msg, int cam_index);
 	void ctrlCallback(const yhs_can_msgs::ctrl_fb& msg);
 
@@ -72,6 +74,14 @@ Q_SIGNALS:
 	void getImage_4(cv::Mat img);
 
 public Q_SLOTS:
+	// 订阅压缩图像话题回调函数
+	void imgCallback_C0(const sensor_msgs::CompressedImageConstPtr &msg);
+	void imgCallback_C1(const sensor_msgs::CompressedImageConstPtr &msg);
+	void imgCallback_C2(const sensor_msgs::CompressedImageConstPtr &msg);
+	void imgCallback_C3(const sensor_msgs::CompressedImageConstPtr &msg);
+	void imgCallback_C4(const sensor_msgs::CompressedImageConstPtr &msg);
+
+	// 订阅正常图像话题回调函数
 	void imgCallback_0(const sensor_msgs::ImageConstPtr &msg);
 	void imgCallback_1(const sensor_msgs::ImageConstPtr &msg);
 	void imgCallback_2(const sensor_msgs::ImageConstPtr &msg);
@@ -84,8 +94,15 @@ private:
 	char** init_argv;
 	
 	ConfigInfo *configInfo;
+	bool isCompressImage = true;			// 订阅的是否为压缩图像
 
-	image_transport::Subscriber image_sub0;
+	ros::Subscriber image_sub_c0;			// 订阅压缩图像话题
+	ros::Subscriber image_sub_c1;
+	ros::Subscriber image_sub_c2;
+	ros::Subscriber image_sub_c3;
+	ros::Subscriber image_sub_c4;
+
+	image_transport::Subscriber image_sub0;	// 订阅非压缩图像话题
 	image_transport::Subscriber image_sub1;
 	image_transport::Subscriber image_sub2;
 	image_transport::Subscriber image_sub3;

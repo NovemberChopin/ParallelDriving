@@ -167,6 +167,7 @@ void JoyToCar::ctrlFBCallback(const yhs_can_msgs::ctrl_fb& msg) {
 bool JoyToCar::getPrefixCall(joy_to_car::GetPrefix::Request &req, 
                     joy_to_car::GetPrefix::Response &res) {
     if (req.prefix == "") {
+        std::cout << "req.prefix: " << req.prefix << std::endl;
         return false;
     }
     std::string prefix = req.prefix;

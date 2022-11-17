@@ -66,12 +66,19 @@ void QNode::restorePubTopic(std::string prefix) {
 
 void QNode::shutdownSubTopic() {
 	this->sub_ctrl_fb.shutdown();
-
-	this->image_sub0.shutdown();
-	this->image_sub1.shutdown();
-	this->image_sub2.shutdown();
-	this->image_sub3.shutdown();
-	this->image_sub4.shutdown();
+	if (isCompressImage) {
+		this->image_sub_c0.shutdown();
+		this->image_sub_c1.shutdown();
+		this->image_sub_c2.shutdown();
+		this->image_sub_c3.shutdown();
+		this->image_sub_c3.shutdown();
+	} else {
+		this->image_sub0.shutdown();
+		this->image_sub1.shutdown();
+		this->image_sub2.shutdown();
+		this->image_sub3.shutdown();
+		this->image_sub4.shutdown();
+	}
 	std::cout << "shutdown sub topic" << std::endl;
 }
 
@@ -84,12 +91,19 @@ void QNode::restoreSubTopic(std::string prefix) {
 	for (auto item: configInfo->imageTopics) {
 		std::cout << item.toStdString() << std::endl;
 	}
-	image_sub0 = it.subscribe(configInfo->imageTopics[0].toStdString(), 1, &QNode::imgCallback_0, this);
-	image_sub1 = it.subscribe(configInfo->imageTopics[1].toStdString(), 1, &QNode::imgCallback_1, this);
-	image_sub2 = it.subscribe(configInfo->imageTopics[2].toStdString(), 1, &QNode::imgCallback_2, this);
-	image_sub3 = it.subscribe(configInfo->imageTopics[3].toStdString(), 1, &QNode::imgCallback_3, this);
-	image_sub4 = it.subscribe(configInfo->imageTopics[4].toStdString(), 1, &QNode::imgCallback_4, this);
-	
+	if (isCompressImage) {		// 订阅压缩图像
+		image_sub_c0 = node.subscribe(configInfo->imageTopics[0].toStdString(), 1, &QNode::imgCallback_C0, this);
+		image_sub_c1 = node.subscribe(configInfo->imageTopics[1].toStdString(), 1, &QNode::imgCallback_C1, this);
+		image_sub_c2 = node.subscribe(configInfo->imageTopics[2].toStdString(), 1, &QNode::imgCallback_C2, this);
+		image_sub_c3 = node.subscribe(configInfo->imageTopics[3].toStdString(), 1, &QNode::imgCallback_C3, this);
+		image_sub_c4 = node.subscribe(configInfo->imageTopics[4].toStdString(), 1, &QNode::imgCallback_C4, this);
+	} else {
+		image_sub0 = it.subscribe(configInfo->imageTopics[0].toStdString(), 1, &QNode::imgCallback_0, this);
+		image_sub1 = it.subscribe(configInfo->imageTopics[1].toStdString(), 1, &QNode::imgCallback_1, this);
+		image_sub2 = it.subscribe(configInfo->imageTopics[2].toStdString(), 1, &QNode::imgCallback_2, this);
+		image_sub3 = it.subscribe(configInfo->imageTopics[3].toStdString(), 1, &QNode::imgCallback_3, this);
+		image_sub4 = it.subscribe(configInfo->imageTopics[4].toStdString(), 1, &QNode::imgCallback_4, this);
+	}
 	std::cout << "restore sub topic: " << std::endl;
 	ros::V_string sub_topics;
 	ros::this_node::getSubscribedTopics(sub_topics);
@@ -110,13 +124,19 @@ void QNode::restoreService(std::string prefix) {
 }
 
 
+void QNode::setIsCompressImage(bool isCompress) {
+	this->isCompressImage = isCompress;
+}
+
+
 void QNode::setConfigInfo(ConfigInfo *config) {
 	qDebug() << "set config info";
 	this->configInfo = config;
 }
 
-void QNode::setImageTopic(QStringList *list) {
+void QNode::setImageTopic(QStringList *list, bool hasCompress) {
 	this->configInfo->imageTopics.clear();		// 先清空话题
+	this->isCompressImage = hasCompress;		// 当前话题是否是压缩图像
 	for (int i=0; i<list->size(); i++) {
 		this->configInfo->imageTopics.push_back(list->at(i));
 	}
@@ -230,7 +250,64 @@ void QNode::ImgCallback(const sensor_msgs::ImageConstPtr &msg, int cam_index) {
     }
 }
 
+/*********************** 压缩图像回调函数 ***************************/
+void QNode::imgCallback_C0(const sensor_msgs::CompressedImageConstPtr &msg) {
+	cv::Mat img;
+    try {
+        cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
 
+		Q_EMIT getImage_0(cv_ptr->image);
+    } catch (cv_bridge::Exception& e) {
+		ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->format.c_str());
+    }
+}
+
+void QNode::imgCallback_C1(const sensor_msgs::CompressedImageConstPtr &msg) {
+	cv::Mat img;
+    try {
+        cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
+
+		Q_EMIT getImage_1(cv_ptr->image);
+    } catch (cv_bridge::Exception& e) {
+		ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->format.c_str());
+    }
+}
+
+void QNode::imgCallback_C2(const sensor_msgs::CompressedImageConstPtr &msg) {
+	cv::Mat img;
+    try {
+        cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
+
+		Q_EMIT getImage_2(cv_ptr->image);
+    } catch (cv_bridge::Exception& e) {
+		ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->format.c_str());
+    }
+}
+
+void QNode::imgCallback_C3(const sensor_msgs::CompressedImageConstPtr &msg) {
+	cv::Mat img;
+    try {
+        cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
+
+		Q_EMIT getImage_3(cv_ptr->image);
+    } catch (cv_bridge::Exception& e) {
+		ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->format.c_str());
+    }
+}
+
+void QNode::imgCallback_C4(const sensor_msgs::CompressedImageConstPtr &msg) {
+	cv::Mat img;
+    try {
+        cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
+
+		Q_EMIT getImage_4(cv_ptr->image);
+    } catch (cv_bridge::Exception& e) {
+		ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->format.c_str());
+    }
+}
+
+
+/*********************** 非压缩图像回调函数 ***************************/
 void QNode::imgCallback_0(const sensor_msgs::ImageConstPtr &msg) {
 	cv::Mat img;
     try {
@@ -250,7 +327,6 @@ void QNode::imgCallback_1(const sensor_msgs::ImageConstPtr &msg) {
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
     }
 }
-
 
 void QNode::imgCallback_2(const sensor_msgs::ImageConstPtr &msg) {
 	cv::Mat img;

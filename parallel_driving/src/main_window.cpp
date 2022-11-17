@@ -62,8 +62,8 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	QObject::connect(ui.btn_config, &QPushButton::clicked, this, &MainWindow::openConfigPanel);
 	// 登录页面的信号
 	QObject::connect(configP, SIGNAL(getConfigInfo(ConfigInfo*)), this, SLOT(connectByConfig(ConfigInfo*)));
-	QObject::connect(configP, SIGNAL(getSelectedImg_signal(QStringList*, std::string)), 
-						this, SLOT(getSelectedImg_slot(QStringList*, std::string)));
+	QObject::connect(configP, SIGNAL(getSelectedImg_signal(QStringList*, std::string, bool)), 
+						this, SLOT(getSelectedImg_slot(QStringList*, std::string, bool)));
 	// 计时器超时信号
 	QObject::connect(p_velo_timer, &QTimer::timeout, this, &MainWindow::handleVelocity);
 	QObject::connect(p_steer_timer, &QTimer::timeout, this, &MainWindow::handleSteer);
@@ -78,15 +78,15 @@ MainWindow::~MainWindow() {}
  * 	
  * @param topics 
  */
-void MainWindow::getSelectedImg_slot(QStringList *topics, std::string prefix) {
+void MainWindow::getSelectedImg_slot(QStringList *topics, std::string prefix, bool hasCompress) {
 	if (topics->size() != 5) {
 		QMessageBox::information(this, "错误", "话题不足五个!");
 		return;
 	}
-	this->prefix = prefix;
 	qDebug() << "--- getSelectedTopic_slot ---";
-	this->qnode.setImageTopic(topics);
-
+	this->prefix = prefix;
+	this->qnode.setImageTopic(topics, hasCompress);			// 把选择的 topic 消息发给 qnode
+	
 	if (this->hasJoy) {		// 当前由方向盘控制
 		// 通知方向盘，切换小车: 通过 get_prefix 服务传递给 joy_to_car 节点
 		ros::NodeHandle n;
@@ -449,7 +449,7 @@ void MainWindow::openConfigPanel() {
  */
 void MainWindow::checkROSStatus() {
     // 1. 如果主节点未启动，禁用除连接按钮之外的所有按钮
-	Ui::ConfigPanel* config_ui = configP->getUIPoint();
+	Ui::ConfigPanel* config_ui = configP->getUIPointer();
     if (!ros::master::check()) {
         config_ui->btn_connect->setEnabled(true);
         config_ui->btn_refresh->setEnabled(false);
@@ -468,6 +468,7 @@ void MainWindow::checkROSStatus() {
 		std::string joy_to_car = "joy_to_car_node";
 		bool flag = false;		// 标志位，是否检测到 Joy
 		for (auto n: nodes) {
+			// 只要检测到 "joy_node" 和 "joy_to_car_node" 之一，就表示罗技方向盘接入
 			if (n.find(joy_node) != std::string::npos || 
 				n.find(joy_to_car) != std::string::npos) {
 				flag = true;
@@ -481,6 +482,7 @@ void MainWindow::checkROSStatus() {
 				ros::ServiceClient client = n.serviceClient<joy_to_car::GetPrefix>("get_prefix");
 				joy_to_car::GetPrefix srv;
 				srv.request.prefix = this->prefix;
+				std::cout << "this->prefix: " << this->prefix << std::endl;
 				if (client.call(srv)) {
 					// 第一次接入，要弹窗
 					this->hasJoy = true;

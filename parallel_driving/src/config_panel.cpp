@@ -22,9 +22,12 @@ ConfigPanel::ConfigPanel(QWidget *parent) :
     QObject::connect(ui->btn_confirm, &QPushButton::clicked, this, &ConfigPanel::getSelectedCheckItems);
     QObject::connect(ui->comboBox, SIGNAL(activated(const QString)), 
                     this, SLOT(activated_slot(const QString)));
-    ui->rosMasterUri->setText("http://127.0.0.1:11311");
-    ui->localhost->setText("127.0.0.1");
+    ui->rosMasterUri->setText("http://192.168.50.23:11311");
+    ui->localhost->setText("192.168.50.23");
     ui->rosHostname->setText("parallel_driving");
+    // ui->rosMasterUri->setPlaceholderText("http://192.168.50.23:11311");
+    // ui->localhost->setPlaceholderText("192.168.50.23");
+    // ui->rosHostname->setPlaceholderText("parallel_driving");
     initWindow();
 }
 
@@ -37,7 +40,7 @@ ConfigPanel::~ConfigPanel()
 void ConfigPanel::initWindow() {
 
     // 设置窗体居中显示，并且不能更改大小
-    this->setFixedSize(600, 500);
+    this->setFixedSize(800, 500);
     this->setWindowTitle("车辆配置");
     QDesktopWidget desktop;
     int screenX=desktop.availableGeometry().width();
@@ -57,6 +60,10 @@ void ConfigPanel::initWindow() {
 
     listwidget = new QListWidget;
     listwidget->setStyleSheet("background-color: rgb(208, 247, 255);");
+    // listwidget->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    // listwidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    // listwidget->setHorizontalScrollMode(QListWidget::ScrollPerPixel);
+    // QScroller::grabGesture(listwidget, QScroller::LeftMouseButtonGesture);
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(listwidget);
     ui->showTopics->setLayout(layout);
@@ -104,8 +111,13 @@ void ConfigPanel::getSelectedCheckItems() {
         for (int i=0; i<(5-len); i++) {
             itemList->append(lastTopic);
         }
+        bool hasCompress = false;
+        auto it = this->node_map.find(this->prefix);
+        if (it != this->node_map.end()) {
+            hasCompress = it->second.isCompressedImg;
+        }
         // 把选择的话题传递给 qnode
-        Q_EMIT getSelectedImg_signal(itemList, this->prefix);
+        Q_EMIT getSelectedImg_signal(itemList, this->prefix, hasCompress);
         this->close();
     }
 }
@@ -155,23 +167,33 @@ void ConfigPanel::stringSplit(const std::string& str,
 
 /**
  * @brief Create a Node Map object
- * 如果 prefix=car2 那么需要找 /car2/hik_cam_node_1/camera_info 这样的图像话题节点
+ * 如果 prefix=car2 那么需要找 /car2/hik_cam_node_1/hik_camera 这样的图像话题节点
  * @param nodeName 节点名
  * @param prefix 节点后缀，用于标示小车
+ * @param hasCompress 是否是压缩图像话题
  */
-void ConfigPanel::createNodeMap(std::string nodeName, std::string prefix) {
+void ConfigPanel::createNodeMap(std::string nodeName, std::string prefix, bool hasCompress) {
     std::cout << "nodeName: " << nodeName << "prefix: " << prefix << std::endl;
     NodeInfo nodeinfo;
+    nodeinfo.isCompressedImg = hasCompress;
     nodeinfo.nodeName = nodeName;
     for (auto item: this->topics_info) {
         // std::cout << item.name << " " << item.datatype << std::endl;
         // 以 '/' 分割话题，判断是否为相机话题
         std::vector<std::string> strList;
         stringSplit(item.name, '/', strList);
-        
-        if (strList[1] == prefix && strList.size() > 3) {
-            if (strList[3] == "hik_camera") {
+        if (hasCompress) {      
+            // 对于压缩图像话题的判断逻辑
+            // /car2/hik_node_1/hik_camera/compressed
+            if (strList[1] == prefix && strList.size() == 5 && strList[4] == "compressed") {
                 nodeinfo.topicInfo.push_back(item);
+            }
+        } else {
+            // 对于正常图片话题的判断逻辑   /car2/hik_cam_node_1/hik_camera
+            if (strList[1] == prefix && strList.size() == 4) {
+                if (strList[3] == "hik_camera") {
+                    nodeinfo.topicInfo.push_back(item);
+                }
             }
         }
     }
@@ -221,6 +243,27 @@ bool ConfigPanel::isROSCarNode(std::string nodeName, std::string &prefix) {
 
 
 /**
+ * @brief 检测当前网络中所有的话题是否有压缩格式的图像话题
+ * 当节点名中包含 compressed 而且 类型为 sensor_msgs/CompressedImage
+ * @return true 
+ * @return false 
+ */
+bool ConfigPanel::hasCompressedImage(std::string prefix) {
+    for (auto topic: this->topics_info) {
+        // std::cout << topic.name << " " << topic.datatype << std::endl;
+        if (topic.name.find(prefix) != std::string::npos && 
+            topic.name.find("compressed") != std::string::npos && 
+            topic.datatype == "sensor_msgs/CompressedImage") {
+                std::cout << "find CompressedImage in" << prefix << std::endl;
+                return true;
+            }
+    }
+    std::cout << "Not find CompressedImage in " << prefix << std::endl;
+    return false;
+}
+
+
+/**
  * @brief 点击刷新节点按钮槽函数
  * 
  */
@@ -230,25 +273,28 @@ void ConfigPanel::refresh_node() {
     ui->comboBox->clear();
     this->rosNodes.clear();
     this->topics_info.clear();
+    this->node_map.clear();
     // 获取网络下所有节点名
     ros::master::getNodes(this->rosNodes);
-    // 获取所有节点发布的消息
+    // 获取所有节点发布的消息 V_TopicInfo: std::vector<ros::master::TopicInfo>
+    // TopicInfo: pair <string topic, string type>
     ros::master::getTopics(this->topics_info);
 
-    std::vector<std::string> strList;
-    std::vector<std::string>::iterator it;
-    int car_num = 0;
+    // 在这里检查话题是否包含了压缩格式 sensor_msgs/CompressedImage 数据
+    // bool hasCompress = false;
+    // if (this->hasCompressedImage()) {
+    //     hasCompress = true;
+    // }
 
+    int car_num = 0;
     for (auto node: this->rosNodes) {
         std::string prefix = "";
-        if (isROSCarNode(node, prefix)) {
-            if (node_map.find(prefix) == node_map.end()) {  
-                // 如果当前 node_map 中不存在 prefix
-                createNodeMap(node, prefix);
-            }
+        if (isROSCarNode(node, prefix)) {   // 如果节点为小车节点，查找其发布的图像话题
+            bool hasCompress = this->hasCompressedImage(prefix);
+            createNodeMap(node, prefix, hasCompress);
             car_num++;
             ui->comboBox->addItem(QString::fromStdString(node));
-        }       
+        }
     }
     if (car_num == 0) {
         QMessageBox::information(this, "提示", "检查小车节点是否启动！");

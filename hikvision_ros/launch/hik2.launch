@@ -20,7 +20,10 @@
     <arg name="camera_info_url" default=""/>
 
     <!-- 启动ROS小车驱动 -->
-    <node pkg="yhs_can_control" type="yhs_can_control_node" name="yhs_can_control_node" output="screen">
+    <!-- <node pkg="yhs_can_control" type="yhs_can_control_node" name="yhs_can_control_node" output="screen">
+    </node> -->
+    <!-- 模拟ROS小车节点 -->
+    <node pkg="test_qt_ros" type="yhs_test_qt_ros" name="yhs_can_control_node" output="screen">
     </node>
 
     <node pkg="hikvision_ros" type="hik_cam_node" name="hik_node_1" output="screen">

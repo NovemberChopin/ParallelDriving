@@ -91,7 +91,7 @@ public Q_SLOTS:
 	/* 界面相关槽函数 */
 	void menu_pop_load_config();
 
-	void getSelectedImg_slot(QStringList *topics, std::string prefix);
+	void getSelectedImg_slot(QStringList *topics, std::string prefix, bool hasCompress);
 
 private:
 	boost::shared_ptr<boost::thread> pub_thread;

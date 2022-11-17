@@ -11,6 +11,8 @@
 #include <QListWidgetItem>
 #include <QVBoxLayout>
 #include <QMessageBox>
+#include <QLineEdit>
+#include <QScroller>
 #include <QDebug>
 #include <unordered_map>
 #include "./qnode.hpp"
@@ -20,6 +22,7 @@ namespace parallel_driving {
 
 
 struct NodeInfo {
+    bool isCompressedImg;
     std::string nodeName;
     ros::master::V_TopicInfo topicInfo;
 };
@@ -38,15 +41,17 @@ public:
 
     void addChekoBox(std::string topicName);
 
-    void createNodeMap(std::string nodeName, std::string prefix);
+    void createNodeMap(std::string nodeName, std::string prefix, bool hasCompress);
 
     bool isROSCarNode(std::string nodeName, std::string &prefix);
 
-    Ui::ConfigPanel* getUIPoint() {return this->ui;}
+    Ui::ConfigPanel* getUIPointer() {return this->ui;}
+
+    bool hasCompressedImage(std::string prefix);    // 检测对应的车辆话题是否包含压缩图像
 Q_SIGNALS:
     void getConfigInfo(ConfigInfo *config);      
     // 用户选择订阅的话题信号
-    void getSelectedImg_signal(QStringList *topics, std::string prefix);
+    void getSelectedImg_signal(QStringList *topics, std::string prefix, bool hasCompress);
 
 public Q_SLOTS:
     void ros_connect_clicked();
