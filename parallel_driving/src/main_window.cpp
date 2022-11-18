@@ -85,7 +85,7 @@ void MainWindow::getSelectedImg_slot(QStringList *topics, std::string prefix, bo
 	}
 	qDebug() << "--- getSelectedTopic_slot ---";
 	this->prefix = prefix;
-	this->qnode.setImageTopic(topics, hasCompress);			// 把选择的 topic 消息发给 qnode
+	this->qnode.setImageTopic(topics, hasCompress);	// 把选择的 topic 消息发给 qnode
 	
 	if (this->hasJoy) {		// 当前由方向盘控制
 		// 通知方向盘，切换小车: 通过 get_prefix 服务传递给 joy_to_car 节点
@@ -94,21 +94,18 @@ void MainWindow::getSelectedImg_slot(QStringList *topics, std::string prefix, bo
 		joy_to_car::GetPrefix srv;
 		srv.request.prefix = prefix;
 		if (client.call(srv)) {
+			this->qnode.restoreSubTopic(prefix+'/');		// 订阅到新的车辆话题
 			QString text = QString::fromStdString("方向盘已切换至" + prefix + "小车");
 			QMessageBox::information(this, "提示", text);
 		}
 	} else {				// 软件控制
-		std::cout << "关闭所有话题: " << prefix << std::endl;
-		this->qnode.shutdownPubTopic();
-		this->qnode.shutdownSubTopic();
-		// this->stopThread();				// 停止线程（不清楚为啥不起作用）
-
-		std::cout << "重新启动话题: " << prefix << std::endl;
+		// std::cout << "关闭所有话题: " << prefix << std::endl;
+		// this->qnode.shutdownPubTopic();
+		// this->qnode.shutdownSubTopic();
+		std::cout << "重新配置话题: " << prefix << std::endl;
 		this->qnode.restorePubTopic(prefix+'/');
 		this->qnode.restoreSubTopic(prefix+'/');
-		// if (this->hasJoy == false) {
-		// 	this->startThread();		// 启动发送话题线程
-		// }
+
 	}
 
 	// 更新主界面小车话题展示
@@ -486,7 +483,8 @@ void MainWindow::checkROSStatus() {
 				if (client.call(srv)) {
 					// 第一次接入，要弹窗
 					this->hasJoy = true;
-					this->qnode.shutdownPubTopic();		// 停止发布控制话题
+					// this->qnode.shutdownPubTopic();		// 停止发布控制话题
+					this->qnode.restorePubTopic("kbw/");	// 把该话题重定向到其他话题
 					ui.joy_status->setText("已连接");
 					QMessageBox::information(this, "提示", "检测到罗技方向盘，已切换至方向盘控制!");
 				} else {
@@ -533,7 +531,13 @@ void MainWindow::connectByConfig(ConfigInfo *config) {
 		errBox.setText("主节点启动失败，请检查节点地址！");
 		errBox.exec();
     } else {
-        // 连接成功
+		// 更新配置页面信息
+		Ui::ConfigPanel* con_ui = configP->getUIPointer();
+		con_ui->btn_connect->setText("已连接ROS");
+		con_ui->btn_connect->setEnabled(false);
+		con_ui->btn_refresh->setEnabled(true);
+		con_ui->btn_confirm->setEnabled(true);
+        // 连接成功: 更新主页面信息
         QMessageBox infoBox;
 		infoBox.setText("主节点启动成功！");
 		infoBox.exec();

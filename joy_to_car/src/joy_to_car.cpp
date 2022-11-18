@@ -22,7 +22,7 @@ bool JoyToCar::init() {
 
     // pub_ctrl_ = node_.advertise<yhs_can_msgs::ctrl_cmd>("ctrl_cmd", 5);
     // pub_io_ = node_.advertise<yhs_can_msgs::io_cmd>("io_cmd", 5);
-
+    this->restoreTopics("kbw/");
     boost::thread send_ctrl_thread(boost::bind(&JoyToCar::sendCtrlCmd, this));
     boost::thread send_io_thread(boost::bind(&JoyToCar::sendIOCmd, this));
     ros::spin();
@@ -31,6 +31,7 @@ bool JoyToCar::init() {
 
 
 void JoyToCar::shutdownTopics() {
+    std::cout << "shutdownTopics" << std::endl;
     this->sub_ctrl_fb_.shutdown();
     this->pub_ctrl_.shutdown();
     this->pub_io_.shutdown();
@@ -171,7 +172,7 @@ bool JoyToCar::getPrefixCall(joy_to_car::GetPrefix::Request &req,
         return false;
     }
     std::string prefix = req.prefix;
-    this->shutdownTopics();
+    // this->shutdownTopics();          // 不用 shutdown 直接重置
     this->restoreTopics(prefix+"/");
     std::cout << "joy_to_car: restore topics" << std::endl;
 

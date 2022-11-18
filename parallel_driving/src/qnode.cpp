@@ -39,7 +39,11 @@ bool QNode::init() {
 		return false;
 	}
 	ros::start(); // explicitly needed since our nodehandle is going out of scope.
-
+	ros::NodeHandle node;
+	this->pub_ctrl_cmd = node.advertise<yhs_can_msgs::ctrl_cmd>("ctrl_cmd", 5);
+	this->pub_io_cmd = node.advertise<yhs_can_msgs::io_cmd>("io_cmd", 5);
+	// 首先初始化发送的话题，<没有在这里声明，线程中调用 .publish()函数会报错>
+	// this->restorePubTopic("kbw/");
 	this->start();				// 启动线程
 	return true;
 }

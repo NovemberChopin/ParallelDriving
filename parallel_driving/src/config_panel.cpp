@@ -22,12 +22,12 @@ ConfigPanel::ConfigPanel(QWidget *parent) :
     QObject::connect(ui->btn_confirm, &QPushButton::clicked, this, &ConfigPanel::getSelectedCheckItems);
     QObject::connect(ui->comboBox, SIGNAL(activated(const QString)), 
                     this, SLOT(activated_slot(const QString)));
-    ui->rosMasterUri->setText("http://192.168.50.23:11311");
-    ui->localhost->setText("192.168.50.23");
-    ui->rosHostname->setText("parallel_driving");
-    // ui->rosMasterUri->setPlaceholderText("http://192.168.50.23:11311");
-    // ui->localhost->setPlaceholderText("192.168.50.23");
-    // ui->rosHostname->setPlaceholderText("parallel_driving");
+    // ui->rosMasterUri->setText("http://192.168.50.23:11311");
+    // ui->localhost->setText("192.168.50.23");
+    // ui->rosHostname->setText("parallel_driving");
+    ui->rosMasterUri->setPlaceholderText("请输入ROS主节点地址");
+    ui->localhost->setPlaceholderText("请输入本机IP");
+    ui->rosHostname->setPlaceholderText("请输入节点名");
     initWindow();
 }
 
