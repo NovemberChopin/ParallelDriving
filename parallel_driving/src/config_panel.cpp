@@ -133,7 +133,6 @@ void ConfigPanel::ros_connect_clicked() {
     configInfo->rosMasterUri = ui->rosMasterUri->text();
     configInfo->localhost = ui->localhost->text();
     configInfo->nodename = ui->rosHostname->text();
-
     Q_EMIT getConfigInfo(configInfo);
 }
 
@@ -167,7 +166,6 @@ void ConfigPanel::stringSplit(const std::string& str,
 
 /**
  * @brief Create a Node Map object
- * 如果 prefix=car2 那么需要找 /car2/hik_cam_node_1/hik_camera 这样的图像话题节点
  * @param nodeName 节点名
  * @param prefix 节点后缀，用于标示小车
  * @param hasCompress 是否是压缩图像话题
@@ -182,18 +180,20 @@ void ConfigPanel::createNodeMap(std::string nodeName, std::string prefix, bool h
         // 以 '/' 分割话题，判断是否为相机话题
         std::vector<std::string> strList;
         stringSplit(item.name, '/', strList);
+        std::string usb_name = "usb_cam";
         if (hasCompress) {      
-            // 对于压缩图像话题的判断逻辑
-            // /car2/hik_node_1/hik_camera/compressed
-            if (strList[1] == prefix && strList.size() == 5 && strList[4] == "compressed") {
+            // 对于压缩图像话题的判断逻辑 /car1/usb_cam1/image_raw/compressed
+            if (strList[1] == prefix && strList.size() == 5 &&
+                strList[2].find(usb_name) != std::string::npos &&
+                strList[4] == "compressed") {
                 nodeinfo.topicInfo.push_back(item);
             }
         } else {
-            // 对于正常图片话题的判断逻辑   /car2/hik_cam_node_1/hik_camera
-            if (strList[1] == prefix && strList.size() == 4) {
-                if (strList[3] == "hik_camera") {
-                    nodeinfo.topicInfo.push_back(item);
-                }
+            // 对于正常图片话题的判断逻辑   /car1/usb_cam1/image_raw
+            if (strList[1] == prefix && strList.size() == 4 &&
+                strList[2].find(usb_name) != std::string::npos &&
+                strList[3].find("image_raw") != std::string::npos) {
+                nodeinfo.topicInfo.push_back(item);
             }
         }
     }
@@ -243,7 +243,7 @@ bool ConfigPanel::isROSCarNode(std::string nodeName, std::string &prefix) {
 
 
 /**
- * @brief 检测当前网络中所有的话题是否有压缩格式的图像话题
+ * @brief 检测当前小车发布的的话题是否有压缩格式的图像话题
  * 当节点名中包含 compressed 而且 类型为 sensor_msgs/CompressedImage
  * @return true 
  * @return false 
@@ -291,6 +291,7 @@ void ConfigPanel::refresh_node() {
         std::string prefix = "";
         if (isROSCarNode(node, prefix)) {   // 如果节点为小车节点，查找其发布的图像话题
             bool hasCompress = this->hasCompressedImage(prefix);
+            // bool hasCompress = false;
             createNodeMap(node, prefix, hasCompress);
             car_num++;
             ui->comboBox->addItem(QString::fromStdString(node));

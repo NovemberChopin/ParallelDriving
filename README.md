@@ -223,20 +223,22 @@ ros小车：yhs_FR 07
 
    保存后关闭，输入 `source .bashrc` 使得环境变量生效。
 
-   其实第二步可以不在 .bashrc 文件中设置。只需要在运行ros命令的终端中输入 `export ROS_MASTER_URI=http://192.168.50.23:11311` 也可以，避免来回修改 .bashrc 文件。这样只对当前终端有效。
+   ------
+   
+   其实可以不在 .bashrc 文件中设置。从机只需要在运行ros命令的终端中输入 `export ROS_MASTER_URI=http://192.168.50.23:11311` 也可以，避免来回修改 .bashrc 文件。这样只对当前终端有效。
 
 ### 3. 软件使用
 
 文件介绍：
 
 ```bash
-3.parallel_driving
+parallel_driving
 ├── launch
 	├── run.launch				# 启动小车驱动
 	├── run_car1.launch			# 启动car1的小车和相机驱动，run_car2.launch同理
 	├── runJoy.launch			# 启动罗技方向盘节点
 └── src
-    ├── hikvision_ros			# 海康相机ROS驱动
+    ├── usb_cam					# USB摄像头ROS驱动
     ├── joy_to_car				# 方向盘控制小车的节点
     ├── yhs_can_control			# ROS小车驱动
     └── yhs_can_msgs			# ROS小车用到的消息
@@ -244,23 +246,13 @@ ros小车：yhs_FR 07
 
 #### 3.1 启动软件
 
-1. **修改相机IP**
+1. **配置USB网络摄像头**
 
-   本软件用到海康威视网络摄像头，默认`IP` 为 `192.168.1.64` 。将摄像头通过网线与电脑连接，并修改电脑 `IP` 至 `192.168.1.XXX` 网段。然后打开浏览器输入 `192.168.1.64` 进入，设置摄像头的用户名与密码。
-
-   选择配置->视音频 可以修改摄像头视频参数，程序使用的分辨率为 `1080x720p` ，选择到相应分辨率即可。
-
-   <img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 20-25-46.png" alt="Screenshot from 2022-11-14 20-25-46" style="zoom:67%;" />
-
-   选择配置->网络->基本配置，修改摄像头IP地址，将其修改为局域网同一网段。笔者当前网段为`192.168.50.XXX` ,修改如下：，点击保存即可
-
-   <img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 20-26-56.png" alt="Screenshot from 2022-11-14 20-26-56" style="zoom:67%;" />
-
-   建议将所有摄像头用户名密码设置为相同，避免后续挨个配置。
+   
 
 2. **运行平行驾驶软件**
 
-   - 终端进入 `3.parallel_driving/parallel_driving` 文件夹，输入
+   - 终端进入 `parallel_driving/` 文件夹，输入
 
      ```bash
      ./parallel_driving-x86_64.AppImage
@@ -268,7 +260,7 @@ ros小车：yhs_FR 07
 
      即可启动软件，点击右上角车辆配置，依次填入主节点地址、IP、名称，然后点击启动ROS即可。**注意：在启动小车驱动之前必须先启动软件并连接ROS。**
 
-     <img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 20-42-09.png" alt="Screenshot from 2022-11-14 20-42-09" style="zoom:80%;" />
+     <img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-19 17-59-31.png" alt="Screenshot from 2022-11-19 17-59-31" style="zoom: 80%;" />
 
 3. **运行小车驱动**
 
@@ -279,21 +271,17 @@ ros小车：yhs_FR 07
      ```bash
      # 1.配置当前小车的名称，默认 car1
      <arg name="car1_name" default="car1"/> 
-     # 2.配置相机IP地址，有几个相机就设置几个，然后把相应的节点注释取消
-     <arg name="ip_addr_1" default="192.168.50.70"/>
-     # 3.相机的用户名和密码，根据实际填写
-     <arg name="user_name" default="admin"/>
-     <arg name="password" default="js123456"/>
+     # 2. 配置usb摄像头的参数信息，这部分可以参考相机标定文档章节2.2
      ```
-
+     
    - 若ROS分布式没有修改 `~/.bashrc` 配置文件，则工控机起一终端指定Master地址：
-
+   
      ```bash
      export ROS_MASTER_URI=http://192.168.50.76:11311
      ```
 
-     然后运行：
-
+     在小车1工控机上运行：
+   
      ```bash
      roslaunch launch/run_car1.launch
      ```
@@ -351,7 +339,7 @@ ros小车：yhs_FR 07
 
 罗技方形盘启动方法，电脑连接好方向盘、按照上述装好驱动后
 
-另起终端进入 `3.parallel_driving/catkin_PD` 文件夹，运行
+另起终端进入 `parallel_driving/catkin_PD` 文件夹，运行
 
 ```bash
 roslaunch launch/runJoy.launch
@@ -383,7 +371,9 @@ roslaunch launch/runJoy.launch
 
 ##### 3.2.5 修复畸变
 
-将鼠标移动到画面上，右键菜单选择`加载相机配置` 菜单，弹出页面选择 `3.parallel_driving/parallel_driving/config` 中的相机内参文件，选择确认后会看到畸变已经修复。
+**方法1**
+
+将鼠标移动到画面上，右键菜单选择`加载相机配置` 菜单，弹出页面选择 `parallel_driving/config` 中的相机内参文件，选择确认后会看到畸变已经修复。
 
 <img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-15 10-07-08.png" alt="Screenshot from 2022-11-15 10-07-08" style="zoom:67%;" />
 
@@ -396,3 +386,15 @@ roslaunch launch/runJoy.launch
 修复后：
 
 <img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-15 10-11-46.png" alt="Screenshot from 2022-11-15 10-11-46" style="zoom: 67%;" />
+
+**方法2（推荐）**
+
+将用软件标定生成的相机参数文件 `XXX.yaml` 文件放入工程 `catkin_PD/src/usb_cam/camera_info` 文件下，并把文件中 `camera_name` 属性由 `narrow_stereo` 改为`head_camera` 
+
+然后对在 `catkin_PD/launch/` 文件夹下相应的USB启动launch文件中 `camera_info_url` 属性进行配置：
+
+```bash
+<param name="camera_info_url" value="package://usb_cam/camera_info/usb_1.yaml"/>
+```
+
+这里的文件名可以自定义以对应不同的摄像头。
