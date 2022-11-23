@@ -327,7 +327,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 		
 		if (p_velo_timer->isActive() == false) {
 			key_down = true;
-			qDebug() << "Key_down press " << key_up;
+			qDebug() << "Key_down press " << key_down;
 			p_velo_timer->start(10);
 		}
 	}

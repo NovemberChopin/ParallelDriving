@@ -167,6 +167,16 @@ add_executable(add_two_ints_client src/add_two_ints_client.cpp)
 target_link_libraries(add_two_ints_client ${catkin_LIBRARIES})
 add_dependencies(add_two_ints_client beginner_tutorials_gencpp)
 
+# keyboard
+add_executable(keyboard_node src/keyboard.cpp)
+target_link_libraries(keyboard_node ${catkin_LIBRARIES})
+add_dependencies(keyboard_node beginner_tutorials_generate_messages_cpp)
+
+# termio.h
+add_executable(termio_node src/termio.cpp)
+target_link_libraries(termio_node ${catkin_LIBRARIES})
+add_dependencies(termio_node beginner_tutorials_generate_messages_cpp)
+
 #############
 ## Install ##
 #############
