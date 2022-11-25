@@ -311,7 +311,7 @@ parallel_driving
 - 然后启动小车，接着点击刷新节点按钮，下拉框中会显示当前ROS环境中存在的小车节点，
 - 选择节点后，右侧区域会显示该节点发布的相机话题，勾选需要订阅的话题前，然后点击确认按钮连接小车并显示小车摄像头画面
 
-<img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-14 20-54-19.png" alt="Screenshot from 2022-11-14 20-54-19" style="zoom:80%;" />
+<img src="/home/js/catkin_cx07/src/images/Screenshot from 2022-11-25 14-40-59.png" alt="Screenshot from 2022-11-25 14-40-59" style="zoom:80%;" />
 
 软件界面-中 ：
 

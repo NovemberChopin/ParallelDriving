@@ -237,11 +237,11 @@ void MainWindow::handleSteer() {
 	this->steer_cmd_num++;
 	float steer = 0;
 	if (key_left) {
-		steer = qnode.steer_fb_ + 0.05 * steer_cmd_num;
-		if (steer < -25.0)	steer = -25.0;
-	} else {
-		steer = qnode.steer_fb_ - 0.05 * steer_cmd_num;
+		steer = qnode.steer_fb_ + 0.1 * steer_cmd_num;
 		if (steer > 25.0)  steer = 25.0;
+	} else {
+		steer = qnode.steer_fb_ - 0.1 * steer_cmd_num;
+		if (steer < -25.0)	steer = -25.0;
 	}
 	this->ctrl_msg_.ctrl_cmd_steering = steer;
 }
@@ -278,6 +278,10 @@ void MainWindow::sendCtrlCmd() {
 		ROS_INFO("start send ctrl message");
 		while (ros::ok())
 		{	
+			if (this->isBrake) {
+				this->ctrl_msg_.ctrl_cmd_velocity = 0;
+			}
+
 			this->qnode.pub_ctrl_cmd.publish(this->ctrl_msg_);
 
 			ros::spinOnce();
@@ -308,16 +312,17 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 
 	if (event->key() == Qt::Key_Space) {		// 按下空格开始刹车
 		if (event->isAutoRepeat())	return;
-
+		this->isBrake = true;
 		this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
+		this->ctrl_msg_.ctrl_cmd_velocity = 0;
 		this->ctrl_msg_.ctrl_cmd_Brake = u_int8_t(1);
-		qDebug() << "brake: true";
+		qDebug() << "brake:" << this->isBrake;
 	}
 
 	if (event->key() == Qt::Key_Up) {			// 方向键 上
 		if (event->isAutoRepeat()) return;
 		
-		if (p_velo_timer->isActive() == false) {
+		if (p_velo_timer->isActive() == false && this->gear_P == false) {
 			key_up = true;
 			qDebug() << "Key_Up press " << key_up;
 			p_velo_timer->start(10);
@@ -325,7 +330,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 	} else if (event->key() == Qt::Key_Down) {	// 方向键 下
 		if (event->isAutoRepeat()) return;
 		
-		if (p_velo_timer->isActive() == false) {
+		if (p_velo_timer->isActive() == false && this->gear_P == false) {
 			key_down = true;
 			qDebug() << "Key_down press " << key_down;
 			p_velo_timer->start(10);
@@ -358,29 +363,29 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
 	// 结束刹车，调为空挡
 	if (event->key() == Qt::Key_Space) {	
 		if (event->isAutoRepeat())	return;
-
+		this->isBrake = false;
 		this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
 		this->ctrl_msg_.ctrl_cmd_Brake = u_int8_t(0);
-		qDebug() << "brake: false";
+		qDebug() << "brake:" << this->isBrake;
 	}
 
 	if (event->key() == Qt::Key_Up) {
 		if (event->isAutoRepeat()) return;
-		key_up = false;
-		qDebug() << "Key_Up release" << key_up;
-		// 改为空挡
-		this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
 		if (p_velo_timer->isActive() == true) {
+			qDebug() << "Key_Up release" << key_up;
+			key_up = false;
+			// 改为空挡
+			this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
 			p_velo_timer->stop();
 			this->velo_cmd_num = 0;
 		}
 	} else if (event->key() == Qt::Key_Down) {
 		if (event->isAutoRepeat()) return;
-		key_down = false;
-		qDebug() << "Key_down release" << key_up;
-		// 改为空挡
-		this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
 		if (p_velo_timer->isActive() == true) {
+			qDebug() << "Key_down release" << key_up;
+			key_down = false;
+			// 改为空挡
+			this->ctrl_msg_.ctrl_cmd_gear = u_int8_t(3);
 			p_velo_timer->stop();
 			this->velo_cmd_num = 0;
 		}
