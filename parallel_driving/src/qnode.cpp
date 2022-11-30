@@ -2,7 +2,6 @@
 #include "../include/parallel_driving/qnode.hpp"
 
 using namespace cv;
-using namespace dnn;
 
 namespace parallel_driving {
 
